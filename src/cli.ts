@@ -1,28 +1,17 @@
 #!/usr/bin/env node
 
-const VERSION = "0.0.1";
+import { Command } from "commander";
+import { scanCommand } from "./commands/scan.js";
+import { doctorCommand } from "./commands/doctor.js";
+import { versionCommand } from "./commands/version.js";
 
-const args = process.argv.slice(2);
+const program = new Command();
 
-if (args.includes("--version") || args.includes("-v")) {
-  console.log(`VulneraScan v${VERSION}`);
-  process.exit(0);
-}
+program
+  .name("vulnerascan")
+  .description("Developer-first vulnerability scanner for modern software projects.")
+  .addCommand(scanCommand)
+  .addCommand(doctorCommand)
+  .addCommand(versionCommand);
 
-console.log(`VulneraScan
-
-🚧 Under active development.
-
-Current version: ${VERSION}
-
-This release exists to reserve the npm package name.
-
-Upcoming features:
-- Dependency discovery
-- Dependency graph generation
-- Vulnerability detection
-- Multi-language support
-- AI-assisted remediation insights
-
-GitHub:
-https://github.com/hnpsaga/vulnerascan`);
+program.parse(process.argv);

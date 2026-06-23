@@ -1,0 +1,18 @@
+# CODEOWNERS
+# This file defines code ownership for the VulneraScan repository.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global ownership — all files require review from @hnpsaga
+* @hnpsaga
+
+# Source code
+/src/ @hnpsaga
+
+# Tests
+/tests/ @hnpsaga
+
+# GitHub workflows require explicit review
+/.github/workflows/ @hnpsaga
+
+# Documentation
+/docs/ @hnpsaga

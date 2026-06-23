@@ -1,0 +1,52 @@
+name: Release Preparation
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to prepare (e.g. 0.0.1)"
+        required: true
+        default: "0.0.1"
+
+jobs:
+  prepare-release:
+    name: Validate & Build Release Candidate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+      - name: Validate package contents
+        run: npm pack --dry-run
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnerascan-dist-${{ github.event.inputs.version }}
+          path: dist/
+          retention-days: 7

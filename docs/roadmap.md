@@ -15,9 +15,9 @@ VulneraScan is built incrementally. Each release delivers a usable, stable slice
 
 ---
 
-## Active Development
+## Released
 
-### v0.0.1 — Foundation _(current)_
+### v0.0.1 — Foundation
 
 **Goal**: Establish repository standards, CLI framework, and development tooling.
 
@@ -36,25 +36,35 @@ VulneraScan is built incrementally. Each release delivers a usable, stable slice
 | ADR documentation                 | ✅ Done |
 | CONTRIBUTING, SECURITY guidelines | ✅ Done |
 
+### v0.0.2 — Foundation (patch)
+
+**Goal**: Patch release with foundational improvements.
+
+| Item             | Status  |
+| ---------------- | ------- |
+| Publish v0.0.2   | ✅ Done |
+| Internal cleanup | ✅ Done |
+
+### v0.0.3 — Project Discovery _(current)_
+
+**Goal**: Detect project manifests and identify the ecosystem.
+
+| Item                          | Status    |
+| ----------------------------- | --------- |
+| Detect `package.json`         | ✅ Done   |
+| Detect `pom.xml`              | ✅ Done   |
+| Detect `build.gradle`         | ✅ Done   |
+| Detect `build.gradle.kts`     | ✅ Done   |
+| Detect `requirements.txt`     | ✅ Done   |
+| Detect `pyproject.toml`       | ✅ Done   |
+| Report detected ecosystem     | ✅ Done   |
+| Recursive workspace discovery | 📋 Future |
+
 ---
 
 ## Upcoming Releases
 
-### v0.0.2 — Project Discovery
-
-**Goal**: Detect project manifests and identify the ecosystem.
-
-| Item                          | Status     |
-| ----------------------------- | ---------- |
-| Detect `package.json`         | 📋 Planned |
-| Detect `pom.xml`              | 📋 Planned |
-| Detect `requirements.txt`     | 📋 Planned |
-| Report detected ecosystem     | 📋 Planned |
-| Recursive workspace discovery | 📋 Planned |
-
----
-
-### v0.0.3 — Dependency Graph
+### v0.0.4 — Dependency Graph
 
 **Goal**: Parse manifests and build a resolved dependency graph.
 

@@ -10,9 +10,9 @@ Developer-first vulnerability scanner for modern software projects.
 
 ## Status
 
-🔨 **v0.0.1 — Foundation**
+✅ **v0.0.3 — Project Discovery**
 
-The CLI framework, tooling, and repository standards are in place. Vulnerability scanning functionality is coming in v0.0.2.
+Project detection across multiple ecosystems is implemented.
 
 ---
 
@@ -32,17 +32,17 @@ npx @hnpsaga/vulnerascan --help
 
 ## Commands
 
-| Command               | Description                                   |
-| --------------------- | --------------------------------------------- |
-| `vulnerascan`         | Display help information                      |
-| `vulnerascan version` | Print the current version                     |
-| `vulnerascan doctor`  | Check environment health and configuration    |
-| `vulnerascan scan`    | Scan for vulnerabilities _(coming in v0.0.2)_ |
+| Command               | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| `vulnerascan`         | Display help information                         |
+| `vulnerascan version` | Print the current version                        |
+| `vulnerascan doctor`  | Check environment health and configuration       |
+| `vulnerascan scan`    | Detect project type and scan for vulnerabilities |
 
 ### `vulnerascan version`
 
 ```
-VulneraScan v0.0.1
+VulneraScan v0.0.3
 ```
 
 ### `vulnerascan doctor`
@@ -62,22 +62,43 @@ All checks passed. VulneraScan is ready.
 
 ### `vulnerascan scan`
 
+Detects the project type and identifies the manifest file:
+
 ```
-Scanning functionality coming in v0.0.2
+$ vulnerascan scan
+Project Type: Node.js
+Manifest: package.json
+```
+
+#### Supported ecosystems
+
+| Ecosystem | Manifest(s)                           |
+| --------- | ------------------------------------- |
+| Node.js   | `package.json`                        |
+| Maven     | `pom.xml`                             |
+| Gradle    | `build.gradle` / `build.gradle.kts`   |
+| Python    | `requirements.txt` / `pyproject.toml` |
+
+If no supported project type is detected, the command exits with code 1:
+
+```
+$ vulnerascan scan
+No supported project type detected.
 ```
 
 ---
 
 ## Development Status
 
-| Version | Phase             | Status         |
-| ------- | ----------------- | -------------- |
-| v0.0.1  | Foundation        | 🔨 In Progress |
-| v0.0.2  | Project Discovery | 📋 Planned     |
-| v0.0.3  | Dependency Graph  | 📋 Planned     |
-| v0.1.0  | Stable CLI        | 📋 Planned     |
-| v0.2.0  | Local Dashboard   | 📋 Planned     |
-| v0.3.0  | AI Remediation    | 📋 Planned     |
+| Version | Phase             | Status      |
+| ------- | ----------------- | ----------- |
+| v0.0.1  | Foundation        | ✅ Released |
+| v0.0.2  | Foundation        | ✅ Released |
+| v0.0.3  | Project Discovery | ✅ Released |
+| v0.0.4  | Dependency Graph  | 📋 Planned  |
+| v0.1.0  | Stable CLI        | 📋 Planned  |
+| v0.2.0  | Local Dashboard   | 📋 Planned  |
+| v0.3.0  | AI Remediation    | 📋 Planned  |
 
 See the full [Roadmap](./docs/roadmap.md) for details.
 
@@ -85,7 +106,7 @@ See the full [Roadmap](./docs/roadmap.md) for details.
 
 ## Planned Features
 
-- 🔍 Dependency discovery across multiple ecosystems
+- 🔍 Dependency graph generation
 - 📊 Dependency graph generation
 - 🛡️ Vulnerability detection via OSV, NVD, and GitHub Advisories
 - 🌍 Multi-language support (Node.js, Python, Maven, Gradle)

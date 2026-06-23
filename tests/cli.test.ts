@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { execSync } from "child_process";
-import { existsSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 
@@ -12,6 +12,9 @@ function runCLI(
   options?: { cwd?: string },
 ): { stdout: string; stderr: string; exitCode: number } {
   const cwd = options?.cwd ?? PROJECT_ROOT;
+  if (!existsSync(cwd)) {
+    mkdirSync(cwd, { recursive: true });
+  }
   try {
     const stdout = execSync(`node --import tsx/esm ${CLI_ENTRY} ${args}`, {
       encoding: "utf-8",
@@ -113,7 +116,7 @@ describe("scan command", () => {
   it("exits with code 1 for unknown project", () => {
     const result = runCLI("scan", { cwd: join(FIXTURES, "unknown-project") });
     expect(result.exitCode).toBe(1);
-    expect(result.stdout).toContain("No supported project type detected.");
+    expect(result.stdout || result.stderr).toContain("No supported project type detected.");
   });
 });
 

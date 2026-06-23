@@ -11,7 +11,7 @@ export const scanCommand = new Command("scan")
       const project = await discovery.discover(directory);
 
       if (!project) {
-        console.log("No supported project type detected.");
+        console.error("No supported project type detected.");
         process.exitCode = 1;
         return;
       }

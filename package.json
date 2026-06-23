@@ -32,9 +32,26 @@
     "security",
     "vulnerability-scanner",
     "dependency-analysis",
+    "dependency-graph",
+    "typescript",
     "cli",
-    "typescript"
+    "developer-tools",
+    "osv",
+    "supply-chain-security",
+    "open-source-security"
   ],
+  "author": {
+    "name": "Hari Naga Praveen Saga",
+    "url": "https://github.com/hnpsaga"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hnpsaga/vulnerascan.git"
+  },
+  "homepage": "https://github.com/hnpsaga/vulnerascan#readme",
+  "bugs": {
+    "url": "https://github.com/hnpsaga/vulnerascan/issues"
+  },
   "publishConfig": {
     "access": "public"
   },

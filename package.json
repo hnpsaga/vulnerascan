@@ -1,6 +1,6 @@
 {
   "name": "@hnpsaga/vulnerascan",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Developer-first vulnerability scanner for modern software projects.",
   "type": "module",
   "main": "./dist/index.js",

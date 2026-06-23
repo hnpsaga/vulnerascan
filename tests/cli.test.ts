@@ -4,14 +4,18 @@ import { existsSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 
-/**
- * Helper to run the CLI via tsx during testing (no build required).
- */
-function runCLI(args: string): { stdout: string; stderr: string; exitCode: number } {
+const PROJECT_ROOT = join(import.meta.dirname, "..");
+const CLI_ENTRY = join(PROJECT_ROOT, "src", "cli.ts");
+
+function runCLI(
+  args: string,
+  options?: { cwd?: string },
+): { stdout: string; stderr: string; exitCode: number } {
+  const cwd = options?.cwd ?? PROJECT_ROOT;
   try {
-    const stdout = execSync(`node --import tsx/esm src/cli.ts ${args}`, {
+    const stdout = execSync(`node --import tsx/esm ${CLI_ENTRY} ${args}`, {
       encoding: "utf-8",
-      cwd: process.cwd(),
+      cwd,
       env: { ...process.env, NO_COLOR: "1" },
     });
     return { stdout, stderr: "", exitCode: 0 };
@@ -28,6 +32,8 @@ function runCLI(args: string): { stdout: string; stderr: string; exitCode: numbe
     };
   }
 }
+
+const FIXTURES = join(import.meta.dirname, "fixtures");
 
 describe("CLI startup", () => {
   it("shows help when invoked with --help", () => {
@@ -50,15 +56,64 @@ describe("version command", () => {
   it("outputs the correct version string", () => {
     const result = runCLI("version");
     expect(result.exitCode).toBe(0);
-    expect(result.stdout.trim()).toBe("VulneraScan v0.0.1");
+    expect(result.stdout.trim()).toBe("VulneraScan v0.0.3");
   });
 });
 
 describe("scan command", () => {
-  it("outputs coming-soon message", () => {
+  it("detects Node.js project from repository root", () => {
     const result = runCLI("scan");
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain("Scanning functionality coming in v0.0.2");
+    expect(result.stdout).toContain("Project Type: Node.js");
+    expect(result.stdout).toContain("Manifest: package.json");
+  });
+
+  it("detects Node.js project in fixture directory", () => {
+    const result = runCLI("scan", { cwd: join(FIXTURES, "node-project") });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Project Type: Node.js");
+    expect(result.stdout).toContain("Manifest: package.json");
+  });
+
+  it("detects Maven project in fixture directory", () => {
+    const result = runCLI("scan", { cwd: join(FIXTURES, "maven-project") });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Project Type: Maven");
+    expect(result.stdout).toContain("Manifest: pom.xml");
+  });
+
+  it("detects Gradle project in fixture directory", () => {
+    const result = runCLI("scan", { cwd: join(FIXTURES, "gradle-project") });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Project Type: Gradle");
+    expect(result.stdout).toContain("Manifest: build.gradle");
+  });
+
+  it("detects Gradle Kotlin project in fixture directory", () => {
+    const result = runCLI("scan", { cwd: join(FIXTURES, "gradle-kts-project") });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Project Type: Gradle");
+    expect(result.stdout).toContain("Manifest: build.gradle.kts");
+  });
+
+  it("detects Python project in fixture directory", () => {
+    const result = runCLI("scan", { cwd: join(FIXTURES, "python-project") });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Project Type: Python");
+    expect(result.stdout).toContain("Manifest: requirements.txt");
+  });
+
+  it("detects Python pyproject in fixture directory", () => {
+    const result = runCLI("scan", { cwd: join(FIXTURES, "python-pyproject") });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Project Type: Python");
+    expect(result.stdout).toContain("Manifest: pyproject.toml");
+  });
+
+  it("exits with code 1 for unknown project", () => {
+    const result = runCLI("scan", { cwd: join(FIXTURES, "unknown-project") });
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toContain("No supported project type detected.");
   });
 });
 

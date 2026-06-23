@@ -1,0 +1,29 @@
+{
+  "name": "vulnerascan",
+  "version": "0.0.1",
+  "description": "Developer-first vulnerability scanner for modern software projects.",
+  "type": "module",
+  "main": "./dist/cli.js",
+  "bin": {
+    "vulnerascan": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "security",
+    "vulnerability-scanner",
+    "dependency-analysis",
+    "cli",
+    "typescript"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "typescript": "^6.0.3"
+  }
+}

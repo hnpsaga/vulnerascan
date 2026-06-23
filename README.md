@@ -27,13 +27,13 @@ The purpose of this release is to secure the npm package name while active devel
 ## Installation
 
 ```bash
-npm install -g vulnerascan
+npm install -g @hnpsaga/vulnerascan
 ```
 
 or
 
 ```bash
-npx vulnerascan --version
+npx @hnpsaga/vulnerascan --version
 ```
 
 ## Roadmap

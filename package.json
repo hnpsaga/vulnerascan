@@ -1,5 +1,5 @@
 {
-  "name": "vulnerascan",
+  "name": "@hnpsaga/vulnerascan",
   "version": "0.0.1",
   "description": "Developer-first vulnerability scanner for modern software projects.",
   "type": "module",
@@ -21,6 +21,9 @@
     "cli",
     "typescript"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^26.0.0",

@@ -7,6 +7,7 @@ import { RunManager } from "../src/workspace/run-manager.js";
 import { ProjectType } from "../src/models/project-type.js";
 import { ProjectInfo } from "../src/models/project-info.js";
 import type { Run } from "../src/workspace/models/run.js";
+import type { DiscoveryArtifact } from "../src/workspace/models/discovery.js";
 
 const TEST_WORKSPACES_DIR = join(import.meta.dirname, "tmp-workspaces");
 
@@ -30,6 +31,7 @@ describe("WorkspaceManager", () => {
     const projectPath = join(TEST_WORKSPACES_DIR, "dummy-project");
     const workspace = await workspaceManager.findOrCreateWorkspace(projectPath, ProjectType.Node);
 
+    expect(workspace.schemaVersion).toBe(1);
     expect(workspace.id).toBeDefined();
     expect(workspace.name).toBe("dummy-project");
     expect(workspace.sourcePath).toBe(projectPath);
@@ -112,18 +114,22 @@ describe("RunManager", () => {
     const projectInfo: ProjectInfo = { type: ProjectType.Node, manifest: "package.json" };
 
     const run = await runManager.createRun(workspace.id, projectInfo);
+    expect(run.schemaVersion).toBe(1);
     const runDir = join(TEST_WORKSPACES_DIR, workspace.id, "runs", run.id);
 
     const runJsonContent = JSON.parse(readFileSync(join(runDir, "run.json"), "utf8")) as Run;
+    expect(runJsonContent.schemaVersion).toBe(1);
     expect(runJsonContent.id).toBe(run.id);
     expect(runJsonContent.status).toBe("completed");
     expect(runJsonContent.timestamp).toBe(run.timestamp);
 
     const discoveryJsonContent = JSON.parse(
       readFileSync(join(runDir, "discovery.json"), "utf8"),
-    ) as { projectType: string; manifest: string };
+    ) as DiscoveryArtifact;
+    expect(discoveryJsonContent.schemaVersion).toBe(1);
     expect(discoveryJsonContent.projectType).toBe("node");
     expect(discoveryJsonContent.manifest).toBe("package.json");
+    expect(discoveryJsonContent.sourcePath).toBeDefined();
   });
 
   it("supports named runs", async () => {

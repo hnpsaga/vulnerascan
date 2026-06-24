@@ -1,4 +1,5 @@
 export interface Workspace {
+  schemaVersion: number;
   id: string;
   name: string;
   sourcePath: string;

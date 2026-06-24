@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import { homedir } from "os";
 import crypto from "crypto";
+import { WORKSPACE_SCHEMA_VERSION } from "./constants.js";
 
 export class WorkspaceManager {
   private baseDir: string;
@@ -26,6 +27,10 @@ export class WorkspaceManager {
       const content = fs.readFileSync(metadataPath, "utf8");
       const workspace = JSON.parse(content) as Workspace;
 
+      if (workspace.schemaVersion === undefined) {
+        workspace.schemaVersion = WORKSPACE_SCHEMA_VERSION;
+      }
+
       workspace.lastRunAt = new Date().toISOString();
       await this.saveWorkspace(workspace);
       return workspace;
@@ -41,6 +46,7 @@ export class WorkspaceManager {
     const now = new Date().toISOString();
     const name = path.basename(normalizedPath) || "root";
     const workspace: Workspace = {
+      schemaVersion: WORKSPACE_SCHEMA_VERSION,
       id,
       name,
       sourcePath: normalizedPath,

@@ -1,5 +1,7 @@
 import { Run } from "./models/run.js";
 import { ProjectInfo } from "../models/project-info.js";
+import { DiscoveryArtifact } from "./models/discovery.js";
+import { RUN_SCHEMA_VERSION, DISCOVERY_SCHEMA_VERSION } from "./constants.js";
 import path from "path";
 import fs from "fs";
 import { homedir } from "os";
@@ -36,7 +38,17 @@ export class RunManager {
     const runDir = path.join(runsDir, runId);
     fs.mkdirSync(runDir, { recursive: true });
 
+    // Read workspace.json to get sourcePath
+    const workspaceJsonPath = path.join(workspaceDir, "workspace.json");
+    let sourcePath = "";
+    if (fs.existsSync(workspaceJsonPath)) {
+      const workspaceContent = fs.readFileSync(workspaceJsonPath, "utf8");
+      const workspaceData = JSON.parse(workspaceContent) as { sourcePath: string };
+      sourcePath = workspaceData.sourcePath;
+    }
+
     const run: Run = {
+      schemaVersion: RUN_SCHEMA_VERSION,
       id: runId,
       timestamp: date.toISOString(),
       status: "completed",
@@ -51,9 +63,11 @@ export class RunManager {
 
     // Persist discovery results (discovery.json)
     const discoveryJsonPath = path.join(runDir, "discovery.json");
-    const discoveryData = {
+    const discoveryData: DiscoveryArtifact = {
+      schemaVersion: DISCOVERY_SCHEMA_VERSION,
       projectType: projectInfo.type,
       manifest: projectInfo.manifest,
+      sourcePath,
     };
     await fs.promises.writeFile(discoveryJsonPath, JSON.stringify(discoveryData, null, 2), "utf8");
 

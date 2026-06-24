@@ -32,17 +32,17 @@ The output artifact is named `dependency-graph.json` and is saved within the sca
 
 Each node represents a unique package version resolved in the project workspace, including the root application itself.
 
-| Field | Type | Description |
-|---|---|---|
-| `id` | `string` | Stable ecosystem-scoped package identifier (e.g., `"npm:foo@1.0.0"`). |
-| `name` | `string` | Name of the package (e.g., `"foo"`). |
-| `version` | `string` | Resolved package version (e.g., `"1.0.0"`). |
-| `ecosystem` | `string` | Target package ecosystem (e.g., `"npm"`). |
-| `dependencyType` | `string` | The dependency type category: `"production"`, `"development"`, `"optional"`, or `"peer"`. |
-| `isDirect` | `boolean` | Flag indicating if this package is a direct dependency of the root project. |
-| `isTransitive` | `boolean` | Flag indicating if this package is a transitive dependency introduced by another package. |
-| `parents` | `string[]` | Alphabetically sorted array of parent node IDs. |
-| `children` | `string[]` | Alphabetically sorted array of child node IDs. |
+| Field            | Type       | Description                                                                               |
+| ---------------- | ---------- | ----------------------------------------------------------------------------------------- |
+| `id`             | `string`   | Stable ecosystem-scoped package identifier (e.g., `"npm:foo@1.0.0"`).                     |
+| `name`           | `string`   | Name of the package (e.g., `"foo"`).                                                      |
+| `version`        | `string`   | Resolved package version (e.g., `"1.0.0"`).                                               |
+| `ecosystem`      | `string`   | Target package ecosystem (e.g., `"npm"`).                                                 |
+| `dependencyType` | `string`   | The dependency type category: `"production"`, `"development"`, `"optional"`, or `"peer"`. |
+| `isDirect`       | `boolean`  | Flag indicating if this package is a direct dependency of the root project.               |
+| `isTransitive`   | `boolean`  | Flag indicating if this package is a transitive dependency introduced by another package. |
+| `parents`        | `string[]` | Alphabetically sorted array of parent node IDs.                                           |
+| `children`       | `string[]` | Alphabetically sorted array of child node IDs.                                            |
 
 ---
 
@@ -73,12 +73,8 @@ Here is an example output generated for a project with one direct dependency (`f
       "dependencyType": "development",
       "isDirect": true,
       "isTransitive": false,
-      "parents": [
-        "npm:node-with-lockfile@1.0.0"
-      ],
-      "children": [
-        "npm:baz@3.0.0"
-      ]
+      "parents": ["npm:node-with-lockfile@1.0.0"],
+      "children": ["npm:baz@3.0.0"]
     },
     {
       "id": "npm:baz@3.0.0",
@@ -88,9 +84,7 @@ Here is an example output generated for a project with one direct dependency (`f
       "dependencyType": "development",
       "isDirect": false,
       "isTransitive": true,
-      "parents": [
-        "npm:bar@2.0.0"
-      ],
+      "parents": ["npm:bar@2.0.0"],
       "children": []
     },
     {
@@ -101,9 +95,7 @@ Here is an example output generated for a project with one direct dependency (`f
       "dependencyType": "production",
       "isDirect": true,
       "isTransitive": false,
-      "parents": [
-        "npm:node-with-lockfile@1.0.0"
-      ],
+      "parents": ["npm:node-with-lockfile@1.0.0"],
       "children": []
     },
     {
@@ -115,10 +107,7 @@ Here is an example output generated for a project with one direct dependency (`f
       "isDirect": false,
       "isTransitive": false,
       "parents": [],
-      "children": [
-        "npm:bar@2.0.0",
-        "npm:foo@1.0.0"
-      ]
+      "children": ["npm:bar@2.0.0", "npm:foo@1.0.0"]
     }
   ],
   "edges": [

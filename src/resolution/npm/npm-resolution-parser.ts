@@ -67,7 +67,7 @@ const TYPE_PRECEDENCE = {
 
 function getMorePrecedentType(
   type1: "production" | "development" | "optional" | "peer",
-  type2: "production" | "development" | "optional" | "peer"
+  type2: "production" | "development" | "optional" | "peer",
 ): "production" | "development" | "optional" | "peer" {
   return TYPE_PRECEDENCE[type1] >= TYPE_PRECEDENCE[type2] ? type1 : type2;
 }
@@ -262,7 +262,10 @@ export class NpmResolutionParser implements ResolutionParser {
       }
     }
 
-    const visitedPathsMaxType = new Map<string, "production" | "development" | "optional" | "peer">();
+    const visitedPathsMaxType = new Map<
+      string,
+      "production" | "development" | "optional" | "peer"
+    >();
 
     while (queue.length > 0) {
       const { path: currentPath, nodeId, type } = queue.shift()!;

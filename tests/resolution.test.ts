@@ -215,10 +215,7 @@ describe("Dependency Resolution Engine", () => {
       };
 
       writeFileSync(join(manifestsDir, "package.json"), JSON.stringify(packageJson, null, 2));
-      writeFileSync(
-        join(manifestsDir, "package-lock.json"),
-        JSON.stringify(packageLock, null, 2),
-      );
+      writeFileSync(join(manifestsDir, "package-lock.json"), JSON.stringify(packageLock, null, 2));
 
       const parser = new NpmResolutionParser();
       const summary = await parser.parse(workspacePath, "existing-lockfile");
@@ -288,10 +285,7 @@ describe("Dependency Resolution Engine", () => {
       };
 
       writeFileSync(join(manifestsDir, "package.json"), JSON.stringify(packageJson, null, 2));
-      writeFileSync(
-        join(manifestsDir, "package-lock.json"),
-        JSON.stringify(packageLock, null, 2),
-      );
+      writeFileSync(join(manifestsDir, "package-lock.json"), JSON.stringify(packageLock, null, 2));
 
       const parser = new NpmResolutionParser();
       const summary = await parser.parse(workspacePath, "existing-lockfile");
@@ -362,10 +356,7 @@ describe("Dependency Resolution Engine", () => {
       };
 
       writeFileSync(join(manifestsDir, "package.json"), JSON.stringify(packageJson, null, 2));
-      writeFileSync(
-        join(manifestsDir, "package-lock.json"),
-        JSON.stringify(packageLock, null, 2),
-      );
+      writeFileSync(join(manifestsDir, "package-lock.json"), JSON.stringify(packageLock, null, 2));
 
       const parser = new NpmResolutionParser();
       const summary = await parser.parse(workspacePath, "existing-lockfile");
@@ -418,10 +409,7 @@ describe("Dependency Resolution Engine", () => {
       };
 
       writeFileSync(join(manifestsDir, "package.json"), JSON.stringify(packageJson, null, 2));
-      writeFileSync(
-        join(manifestsDir, "package-lock.json"),
-        JSON.stringify(packageLock, null, 2),
-      );
+      writeFileSync(join(manifestsDir, "package-lock.json"), JSON.stringify(packageLock, null, 2));
 
       const parser = new NpmResolutionParser();
       const summary = await parser.parse(workspacePath, "existing-lockfile");
@@ -487,13 +475,7 @@ describe("Dependency Resolution Engine", () => {
       expect(content.directDependencies).toBe(2);
       expect(content.totalDependencies).toBe(3);
 
-      const graphJsonPath = join(
-        TEST_DIR,
-        workspace.id,
-        "runs",
-        run.id,
-        "dependency-graph.json",
-      );
+      const graphJsonPath = join(TEST_DIR, workspace.id, "runs", run.id, "dependency-graph.json");
       expect(existsSync(graphJsonPath)).toBe(true);
 
       const graphContent = JSON.parse(readFileSync(graphJsonPath, "utf8")) as Record<
@@ -529,13 +511,7 @@ describe("Dependency Resolution Engine", () => {
       );
       expect(existsSync(resolutionJsonPath)).toBe(true);
 
-      const graphJsonPath = join(
-        TEST_DIR,
-        workspace.id,
-        "runs",
-        run.id,
-        "dependency-graph.json",
-      );
+      const graphJsonPath = join(TEST_DIR, workspace.id, "runs", run.id, "dependency-graph.json");
       expect(existsSync(graphJsonPath)).toBe(true);
     });
 

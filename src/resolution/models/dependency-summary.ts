@@ -5,4 +5,3 @@ export interface DependencySummary {
   totalDependencies: number;
   graph?: DependencyGraph;
 }
-

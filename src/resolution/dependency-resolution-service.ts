@@ -95,11 +95,7 @@ export class DependencyResolutionService {
 
       if (summary.graph) {
         const graphJsonPath = path.join(runDir, "dependency-graph.json");
-        await fs.promises.writeFile(
-          graphJsonPath,
-          JSON.stringify(summary.graph, null, 2),
-          "utf8",
-        );
+        await fs.promises.writeFile(graphJsonPath, JSON.stringify(summary.graph, null, 2), "utf8");
       }
 
       return successArtifact;

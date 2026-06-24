@@ -1,0 +1,7 @@
+{
+  "name": "node-without-lockfile",
+  "version": "1.0.0",
+  "dependencies": {
+    "commander": "^14.0.0"
+  }
+}

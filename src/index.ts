@@ -14,4 +14,9 @@ export {
   WORKSPACE_SCHEMA_VERSION,
   RUN_SCHEMA_VERSION,
   DISCOVERY_SCHEMA_VERSION,
+  RESOLUTION_SCHEMA_VERSION,
 } from "./workspace/constants.js";
+
+export { DependencyResolutionService } from "./resolution/dependency-resolution-service.js";
+export type { DependencyResolution } from "./resolution/models/dependency-resolution.js";
+export type { DependencySummary } from "./resolution/models/dependency-summary.js";

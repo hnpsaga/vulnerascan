@@ -1,8 +1,9 @@
 import { Command } from "commander";
 import { ProjectDiscoveryService } from "../discovery/project-discovery.js";
-import { getProjectTypeDisplayName } from "../models/project-type.js";
+import { getProjectTypeDisplayName, ProjectType } from "../models/project-type.js";
 import { WorkspaceManager } from "../workspace/workspace-manager.js";
 import { RunManager } from "../workspace/run-manager.js";
+import { DependencyResolutionService } from "../resolution/dependency-resolution-service.js";
 import { formatDisplayDate } from "../utils/date.js";
 
 interface ScanOptions {
@@ -40,6 +41,25 @@ export const scanCommand = new Command("scan")
       console.log(`Workspace: ${workspace.name}`);
       const runDisplay = run.name ? run.name : formatDisplayDate(new Date(run.timestamp));
       console.log(`Run: ${runDisplay}`);
+
+      // Run dependency resolution (currently Node.js only)
+      if (project.type === ProjectType.Node) {
+        const resolutionService = new DependencyResolutionService();
+        const resolution = await resolutionService.resolve(workspace, run);
+
+        if (resolution.status === "failed") {
+          console.error("Dependency resolution failed.");
+          process.exitCode = 1;
+          return;
+        }
+
+        // Output resolution details
+        console.log();
+        console.log(`Resolution Source: ${resolution.resolutionSource}`);
+        console.log();
+        console.log(`Direct Dependencies: ${resolution.directDependencies}`);
+        console.log(`Total Dependencies: ${resolution.totalDependencies}`);
+      }
     } catch (error) {
       console.error("Scan failed:", error);
       process.exitCode = 1;

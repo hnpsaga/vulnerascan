@@ -1,0 +1,7 @@
+{
+  "name": "invalid-package-json",
+  "version": "1.0.0",
+  "dependencies": {
+    "nonexistent-package-abc-xyz-123": "999.99.99"
+  }
+}

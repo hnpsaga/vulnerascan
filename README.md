@@ -102,6 +102,16 @@ All data remains local.
 
 ---
 
+## Dependency Resolution
+
+VulneraScan performs dependency resolution in an isolated local workspace.
+
+The source repository is never modified.
+
+If a lockfile is missing, VulneraScan generates one inside the workspace and uses it for analysis.
+
+---
+
 ## Development Status
 
 | Version | Phase             | Status      |

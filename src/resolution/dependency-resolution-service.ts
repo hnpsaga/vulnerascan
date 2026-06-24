@@ -93,6 +93,11 @@ export class DependencyResolutionService {
         "utf8",
       );
 
+      if (summary.graph) {
+        const graphJsonPath = path.join(runDir, "dependency-graph.json");
+        await fs.promises.writeFile(graphJsonPath, JSON.stringify(summary.graph, null, 2), "utf8");
+      }
+
       return successArtifact;
     } catch (error) {
       const failureArtifact: DependencyResolution = {

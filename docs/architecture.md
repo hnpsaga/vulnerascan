@@ -91,13 +91,15 @@ Each command is an isolated Commander `Command` object exported from its own mod
 
 ---
 
-## Scanner Layer _(planned)_
+## Scanner Layer
 
-The scanner layer will be responsible for:
+The scanner layer is responsible for:
 
-1. Discovering project manifests (`package.json`, `pom.xml`, `requirements.txt`, etc.)
-2. Building a dependency graph
-3. Resolving transitive dependencies
+1. Discovering project manifests (e.g. `package.json`, `pom.xml`, `requirements.txt`, etc.).
+2. Building a resolved, ecosystem-agnostic dependency graph of all direct and transitive dependencies.
+3. Persisting the results as a deterministic graph artifact (`dependency-graph.json`).
+
+For full details on the graph data model, node/edge representation, and generation process, refer to the [Dependency Graph Engine Documentation](./dependency-graph.md).
 
 ---
 

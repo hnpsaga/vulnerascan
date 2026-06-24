@@ -20,3 +20,8 @@ export {
 export { DependencyResolutionService } from "./resolution/dependency-resolution-service.js";
 export type { DependencyResolution } from "./resolution/models/dependency-resolution.js";
 export type { DependencySummary } from "./resolution/models/dependency-summary.js";
+export type {
+  DependencyGraph,
+  DependencyNode,
+  DependencyEdge,
+} from "./resolution/models/dependency-graph.js";

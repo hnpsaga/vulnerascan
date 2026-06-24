@@ -45,7 +45,7 @@ VulneraScan is built incrementally. Each release delivers a usable, stable slice
 | Publish v0.0.2   | ✅ Done |
 | Internal cleanup | ✅ Done |
 
-### v0.0.3 — Project Discovery _(current)_
+### v0.0.3 — Project Discovery
 
 **Goal**: Detect project manifests and identify the ecosystem.
 
@@ -62,19 +62,19 @@ VulneraScan is built incrementally. Each release delivers a usable, stable slice
 
 ---
 
-## Upcoming Releases
-
-### v0.0.4 — Dependency Graph
+### v0.0.5 — Dependency Graph _(current)_
 
 **Goal**: Parse manifests and build a resolved dependency graph.
 
-| Item                            | Status     |
-| ------------------------------- | ---------- |
-| npm dependency resolution       | 📋 Planned |
-| Transitive dependency traversal | 📋 Planned |
-| Dependency graph output (JSON)  | 📋 Planned |
+| Item                            | Status  |
+| ------------------------------- | ------- |
+| npm dependency resolution       | ✅ Done |
+| Transitive dependency traversal | ✅ Done |
+| Dependency graph output (JSON)  | ✅ Done |
 
 ---
+
+## Upcoming Releases
 
 ### v0.1.0 — Stable CLI
 

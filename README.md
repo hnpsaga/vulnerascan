@@ -88,6 +88,20 @@ No supported project type detected.
 
 ---
 
+## Local Workspaces
+
+VulneraScan stores scan history locally:
+
+`~/.vulnerascan/workspaces/`
+
+Each project receives a workspace.
+
+Each scan creates a run.
+
+All data remains local.
+
+---
+
 ## Development Status
 
 | Version | Phase             | Status      |

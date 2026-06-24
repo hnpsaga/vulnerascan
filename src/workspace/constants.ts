@@ -1,0 +1,3 @@
+export const WORKSPACE_SCHEMA_VERSION = 1;
+export const RUN_SCHEMA_VERSION = 1;
+export const DISCOVERY_SCHEMA_VERSION = 1;

@@ -1,0 +1,10 @@
+{
+  "name": "node-with-lockfile",
+  "version": "1.0.0",
+  "dependencies": {
+    "foo": "^1.0.0"
+  },
+  "devDependencies": {
+    "bar": "^2.0.0"
+  }
+}

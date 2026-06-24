@@ -5,6 +5,13 @@ import { WorkspaceManager } from "../workspace/workspace-manager.js";
 import { RunManager } from "../workspace/run-manager.js";
 import { DependencyResolutionService } from "../resolution/dependency-resolution-service.js";
 import { formatDisplayDate } from "../utils/date.js";
+import { homedir } from "os";
+import path from "path";
+import fs from "fs";
+import { loadConfig } from "../provider/config/provider-config.js";
+import { FilesystemVulnerabilityCache } from "../provider/cache/filesystem-cache.js";
+import { OsvVulnerabilityProvider } from "../provider/osv/osv-provider.js";
+import { ProviderRegistry } from "../provider/registry/provider-registry.js";
 
 interface ScanOptions {
   name?: string;
@@ -59,6 +66,59 @@ export const scanCommand = new Command("scan")
         console.log();
         console.log(`Direct Dependencies: ${resolution.directDependencies}`);
         console.log(`Total Dependencies: ${resolution.totalDependencies}`);
+
+        // Run Provider Layer
+        if (resolution.graph) {
+          const home = process.env.VULNERASCAN_HOME || homedir();
+          const workspacesBaseDir = path.join(home, ".vulnerascan", "workspaces");
+          const runDir = path.join(workspacesBaseDir, workspace.id, "runs", run.id);
+
+          const config = loadConfig();
+          const activeProviderName = config.provider.active;
+
+          let cache: FilesystemVulnerabilityCache | undefined = undefined;
+          if (config.provider.osv?.cache.enabled) {
+            const globalCacheDir = path.join(home, ".vulnerascan", "cache", "osv");
+            cache = new FilesystemVulnerabilityCache(
+              globalCacheDir,
+              config.provider.osv.cache.ttlHours,
+            );
+          }
+
+          const registry = new ProviderRegistry();
+          const osvProvider = new OsvVulnerabilityProvider({ cache });
+          registry.register(osvProvider);
+
+          const provider = registry.resolve(activeProviderName);
+
+          const coordinates = (resolution.graph.nodes || [])
+            .filter((node) => node.parents.length > 0)
+            .map((node) => ({
+              ecosystem: node.ecosystem,
+              packageName: node.name,
+              version: node.version,
+            }));
+
+          console.log();
+          console.log(`Querying ${activeProviderName.toUpperCase()} for vulnerabilities...`);
+          const response = await provider.queryPackages(coordinates);
+
+          const providerResultsPath = path.join(runDir, "provider-results.json");
+          const artifact = {
+            schemaVersion: 1,
+            provider: response.provider,
+            vulnerabilities: response.vulnerabilities,
+            metadata: response.metadata,
+          };
+
+          await fs.promises.writeFile(
+            providerResultsPath,
+            JSON.stringify(artifact, null, 2),
+            "utf8",
+          );
+
+          console.log(`Vulnerabilities found: ${response.vulnerabilities.length}`);
+        }
       }
     } catch (error) {
       console.error("Scan failed:", error);

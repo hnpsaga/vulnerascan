@@ -1,3 +1,5 @@
+import { DependencyGraph } from "./dependency-graph.js";
+
 export interface DependencyResolutionSuccess {
   schemaVersion: number;
   projectType: string;
@@ -6,6 +8,7 @@ export interface DependencyResolutionSuccess {
   directDependencies: number;
   totalDependencies: number;
   status?: never;
+  graph?: DependencyGraph;
 }
 
 export interface DependencyResolutionFailure {

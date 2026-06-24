@@ -98,7 +98,10 @@ export class DependencyResolutionService {
         await fs.promises.writeFile(graphJsonPath, JSON.stringify(summary.graph, null, 2), "utf8");
       }
 
-      return successArtifact;
+      return {
+        ...successArtifact,
+        graph: summary.graph,
+      };
     } catch (error) {
       const failureArtifact: DependencyResolution = {
         schemaVersion: RESOLUTION_SCHEMA_VERSION,

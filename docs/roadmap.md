@@ -62,7 +62,7 @@ VulneraScan is built incrementally. Each release delivers a usable, stable slice
 
 ---
 
-### v0.0.5 — Dependency Graph _(current)_
+### v0.0.5 — Dependency Graph
 
 **Goal**: Parse manifests and build a resolved dependency graph.
 
@@ -71,6 +71,18 @@ VulneraScan is built incrementally. Each release delivers a usable, stable slice
 | npm dependency resolution       | ✅ Done |
 | Transitive dependency traversal | ✅ Done |
 | Dependency graph output (JSON)  | ✅ Done |
+
+### v0.0.6 — Vulnerability Provider Layer _(current)_
+
+**Goal**: Establish vulnerability provider architecture, OSV database integration, client cache, registry, and configuration.
+
+| Item                              | Status  |
+| --------------------------------- | ------- |
+| Provider interface & registry     | ✅ Done |
+| OSV database API integration      | ✅ Done |
+| Filesystem cache & TTL expiration | ✅ Done |
+| Provider config & validation      | ✅ Done |
+| `provider-results.json` artifact  | ✅ Done |
 
 ---
 
@@ -82,7 +94,7 @@ VulneraScan is built incrementally. Each release delivers a usable, stable slice
 
 | Item                              | Status     |
 | --------------------------------- | ---------- |
-| OSV provider integration          | 📋 Planned |
+| OSV provider integration          | ✅ Done    |
 | NVD provider integration          | 📋 Planned |
 | CVSS scoring                      | 📋 Planned |
 | Vulnerability report (terminal)   | 📋 Planned |

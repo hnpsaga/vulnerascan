@@ -24,24 +24,23 @@ interface LockfileV1Dep {
   [key: string]: unknown;
 }
 
+interface LockfilePackageEntry {
+  name?: string;
+  version?: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  optionalDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  dev?: boolean;
+  optional?: boolean;
+  peer?: boolean;
+  link?: boolean;
+  resolved?: string;
+  [key: string]: unknown;
+}
+
 interface Lockfile {
-  packages?: Record<
-    string,
-    {
-      name?: string;
-      version?: string;
-      dependencies?: Record<string, string>;
-      devDependencies?: Record<string, string>;
-      optionalDependencies?: Record<string, string>;
-      peerDependencies?: Record<string, string>;
-      dev?: boolean;
-      optional?: boolean;
-      peer?: boolean;
-      link?: boolean;
-      resolved?: string;
-      [key: string]: unknown;
-    }
-  >;
+  packages?: Record<string, LockfilePackageEntry>;
   dependencies?: Record<string, LockfileV1Dep>;
   [key: string]: unknown;
 }
@@ -153,7 +152,7 @@ export class NpmResolutionParser implements ResolutionParser {
       throw new Error(`Failed to parse lockfile at ${lockfilePath}: ${(error as Error).message}`);
     }
 
-    let packagesLock: Record<string, any> = {};
+    let packagesLock: Record<string, LockfilePackageEntry> = {};
     const packagesMap = new Map<string, PackInfo>();
 
     if (lockfile.packages) {
@@ -206,7 +205,7 @@ export class NpmResolutionParser implements ResolutionParser {
     const edgesList: DependencyEdge[] = [];
     const edgesSet = new Set<string>();
 
-    function addEdge(source: string, target: string) {
+    function addEdge(source: string, target: string): void {
       const key = `${source}->${target}`;
       if (!edgesSet.has(key)) {
         edgesSet.add(key);
@@ -386,8 +385,8 @@ export class NpmResolutionParser implements ResolutionParser {
     currentDeps: Record<string, LockfileV1Dep>,
     parentPath: string,
     packagesMap: Map<string, PackInfo>,
-    packagesLock: Record<string, any>,
-  ) {
+    packagesLock: Record<string, LockfilePackageEntry>,
+  ): void {
     for (const [name, dep] of Object.entries(currentDeps)) {
       const currentPath =
         parentPath === "" ? `node_modules/${name}` : `${parentPath}/node_modules/${name}`;
@@ -424,7 +423,7 @@ export class NpmResolutionParser implements ResolutionParser {
   private resolveDependencyPath(
     parentPath: string,
     depName: string,
-    packages: Record<string, any>,
+    packages: Record<string, LockfilePackageEntry>,
   ): string | null {
     if (parentPath === "") {
       const targetPath = `node_modules/${depName}`;
@@ -433,7 +432,7 @@ export class NpmResolutionParser implements ResolutionParser {
     }
 
     const segments = parentPath.split("/");
-    let currentSegments = [...segments];
+    const currentSegments = [...segments];
     while (currentSegments.length > 0) {
       const candidatePath = [...currentSegments, "node_modules", depName].join("/");
       if (packages[candidatePath]) {

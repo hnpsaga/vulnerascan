@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
-import { existsSync, rmSync, mkdirSync } from "fs";
+import { existsSync, rmSync, mkdirSync, utimesSync } from "fs";
 import { join } from "path";
 import http from "http";
 import {
@@ -248,6 +248,18 @@ describe("Vulnerability Cache", () => {
     ];
 
     await shortCache.set(coordinate, vulnerabilities);
+
+    const sanitizedEcosystem = coordinate.ecosystem.toLowerCase().replace(/[^a-z0-9.-]/g, "-");
+    const sanitizedName = coordinate.packageName.replace(/[^a-zA-Z0-9.-]/g, "-");
+    const sanitizedVersion = coordinate.version.replace(/[^a-zA-Z0-9.-]/g, "-");
+    const filePath = join(
+      cacheDir,
+      `${sanitizedEcosystem}-${sanitizedName}-${sanitizedVersion}.json`,
+    );
+
+    const past = new Date(Date.now() - 5000);
+    utimesSync(filePath, past, past);
+
     const cached = await shortCache.get(coordinate);
     expect(cached).toBeNull(); // Expired immediately
   });

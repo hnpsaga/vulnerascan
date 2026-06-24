@@ -103,16 +103,16 @@ For full details on the graph data model, node/edge representation, and generati
 
 ---
 
-## Provider Layer _(planned)_
+## Provider Layer
 
-The provider layer abstracts over vulnerability databases. See [ADR-003](./adr/003-provider-layer.md).
+The Provider Layer (implemented in v0.0.6) abstracts over vulnerability databases (specifically the OSV API). It maps dependency graph package coordinates to vulnerability query formats, handles networking, caching, and retries, and outputs normalized vulnerability structures. See [Provider Layer Documentation](./provider-layer.md) and [ADR-003](./adr/003-provider-layer.md).
 
-Each provider implements a common interface:
+All providers implement the `VulnerabilityProvider` interface:
 
 ```typescript
-interface VulnerabilityProvider {
-  name: string;
-  lookup(packageName: string, version: string): Promise<Vulnerability[]>;
+export interface VulnerabilityProvider {
+  readonly name: string;
+  queryPackages(packages: PackageCoordinate[]): Promise<ProviderResponse>;
 }
 ```
 

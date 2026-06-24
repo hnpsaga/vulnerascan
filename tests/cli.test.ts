@@ -19,7 +19,7 @@ function runCLI(
     const stdout = execSync(`node --import tsx/esm ${CLI_ENTRY} ${args}`, {
       encoding: "utf-8",
       cwd,
-      env: { ...process.env, NO_COLOR: "1" },
+      env: { ...process.env, VULNERASCAN_TEST_MODE: "true", NO_COLOR: "1" },
     });
     return { stdout, stderr: "", exitCode: 0 };
   } catch (err: unknown) {

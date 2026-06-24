@@ -25,3 +25,5 @@ export type {
   DependencyNode,
   DependencyEdge,
 } from "./resolution/models/dependency-graph.js";
+
+export * from "./provider/index.js";

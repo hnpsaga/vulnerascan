@@ -32,6 +32,7 @@ function runCLI(
       env: {
         ...process.env,
         VULNERASCAN_HOME: envHome,
+        VULNERASCAN_TEST_MODE: "true",
         NO_COLOR: "1",
       },
     });

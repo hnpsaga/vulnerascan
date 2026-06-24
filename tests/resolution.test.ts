@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { existsSync, rmSync, mkdirSync, readFileSync } from "fs";
+import { existsSync, rmSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
 import { DependencyResolutionService } from "../src/resolution/dependency-resolution-service.js";
@@ -120,6 +120,327 @@ describe("Dependency Resolution Engine", () => {
       expect(summary.directDependencies).toBe(2);
       expect(summary.totalDependencies).toBe(3);
     });
+
+    it("generates a valid schema and resolves node metadata (direct/transitive, ecosystem, type)", async () => {
+      const manifestManager = new NpmManifestManager();
+      const parser = new NpmResolutionParser();
+      const srcDir = join(FIXTURES_DIR, "node-with-lockfile");
+      const workspacePath = join(TEST_DIR, "workspace-graph-1");
+
+      await manifestManager.copyManifests(srcDir, workspacePath);
+      const summary = await parser.parse(workspacePath, "existing-lockfile");
+
+      expect(summary.graph).toBeDefined();
+      const graph = summary.graph!;
+      expect(graph.schemaVersion).toBe(1);
+      expect(graph.projectType).toBe("node");
+      expect(graph.packageManager).toBe("npm");
+
+      // Verify Nodes
+      // We expect 4 nodes: root (node-with-lockfile), foo, bar, baz
+      expect(graph.nodes.length).toBe(4);
+
+      const rootNode = graph.nodes.find((n) => n.id === "npm:node-with-lockfile@1.0.0")!;
+      expect(rootNode).toBeDefined();
+      expect(rootNode.name).toBe("node-with-lockfile");
+      expect(rootNode.version).toBe("1.0.0");
+      expect(rootNode.ecosystem).toBe("npm");
+      expect(rootNode.isDirect).toBe(false);
+      expect(rootNode.isTransitive).toBe(false);
+
+      const fooNode = graph.nodes.find((n) => n.id === "npm:foo@1.0.0")!;
+      expect(fooNode).toBeDefined();
+      expect(fooNode.isDirect).toBe(true);
+      expect(fooNode.isTransitive).toBe(false);
+      expect(fooNode.dependencyType).toBe("production");
+      expect(fooNode.parents).toContain(rootNode.id);
+
+      const barNode = graph.nodes.find((n) => n.id === "npm:bar@2.0.0")!;
+      expect(barNode).toBeDefined();
+      expect(barNode.isDirect).toBe(true);
+      expect(barNode.isTransitive).toBe(false);
+      expect(barNode.dependencyType).toBe("development"); // bar is in devDependencies
+
+      const bazNode = graph.nodes.find((n) => n.id === "npm:baz@3.0.0")!;
+      expect(bazNode).toBeDefined();
+      expect(bazNode.isDirect).toBe(false);
+      expect(bazNode.isTransitive).toBe(true);
+      expect(bazNode.dependencyType).toBe("development"); // baz is a child of bar (dev dep)
+      expect(bazNode.parents).toContain(barNode.id);
+
+      // Verify Edges
+      expect(graph.edges).toContainEqual({ source: rootNode.id, target: fooNode.id });
+      expect(graph.edges).toContainEqual({ source: rootNode.id, target: barNode.id });
+      expect(graph.edges).toContainEqual({ source: barNode.id, target: bazNode.id });
+    });
+
+    it("handles circular dependencies without infinite loops", async () => {
+      const workspacePath = join(TEST_DIR, "workspace-circular");
+      const manifestsDir = join(workspacePath, "manifests");
+      mkdirSync(manifestsDir, { recursive: true });
+
+      const packageJson = {
+        name: "circular-app",
+        version: "1.0.0",
+        dependencies: {
+          a: "^1.0.0",
+        },
+      };
+
+      const packageLock = {
+        name: "circular-app",
+        version: "1.0.0",
+        lockfileVersion: 3,
+        packages: {
+          "": {
+            name: "circular-app",
+            version: "1.0.0",
+            dependencies: {
+              a: "^1.0.0",
+            },
+          },
+          "node_modules/a": {
+            version: "1.0.0",
+            dependencies: {
+              b: "^1.0.0",
+            },
+          },
+          "node_modules/b": {
+            version: "1.0.0",
+            dependencies: {
+              a: "^1.0.0",
+            },
+          },
+        },
+      };
+
+      writeFileSync(join(manifestsDir, "package.json"), JSON.stringify(packageJson, null, 2));
+      writeFileSync(
+        join(manifestsDir, "package-lock.json"),
+        JSON.stringify(packageLock, null, 2),
+      );
+
+      const parser = new NpmResolutionParser();
+      const summary = await parser.parse(workspacePath, "existing-lockfile");
+
+      expect(summary.totalDependencies).toBe(2); // 'a' and 'b'
+      const graph = summary.graph!;
+      expect(graph.nodes.length).toBe(3); // root, a, b
+
+      const aNode = graph.nodes.find((n) => n.id === "npm:a@1.0.0")!;
+      const bNode = graph.nodes.find((n) => n.id === "npm:b@1.0.0")!;
+
+      expect(aNode.isDirect).toBe(true);
+      expect(aNode.isTransitive).toBe(true); // also transitive via b
+      expect(bNode.isDirect).toBe(false);
+      expect(bNode.isTransitive).toBe(true);
+
+      // circular links
+      expect(aNode.children).toContain(bNode.id);
+      expect(bNode.children).toContain(aNode.id);
+      expect(graph.edges).toContainEqual({ source: aNode.id, target: bNode.id });
+      expect(graph.edges).toContainEqual({ source: bNode.id, target: aNode.id });
+    });
+
+    it("eliminates duplicates and resolves nested dependency chains", async () => {
+      const workspacePath = join(TEST_DIR, "workspace-duplicate");
+      const manifestsDir = join(workspacePath, "manifests");
+      mkdirSync(manifestsDir, { recursive: true });
+
+      const packageJson = {
+        name: "duplicate-app",
+        version: "1.0.0",
+        dependencies: {
+          a: "^1.0.0",
+          b: "^1.0.0",
+        },
+      };
+
+      const packageLock = {
+        name: "duplicate-app",
+        version: "1.0.0",
+        lockfileVersion: 3,
+        packages: {
+          "": {
+            name: "duplicate-app",
+            version: "1.0.0",
+            dependencies: {
+              a: "^1.0.0",
+              b: "^1.0.0",
+            },
+          },
+          "node_modules/a": {
+            version: "1.0.0",
+            dependencies: {
+              c: "^1.0.0",
+            },
+          },
+          "node_modules/b": {
+            version: "1.0.0",
+            dependencies: {
+              c: "^1.0.0",
+            },
+          },
+          "node_modules/c": {
+            version: "1.0.0",
+          },
+        },
+      };
+
+      writeFileSync(join(manifestsDir, "package.json"), JSON.stringify(packageJson, null, 2));
+      writeFileSync(
+        join(manifestsDir, "package-lock.json"),
+        JSON.stringify(packageLock, null, 2),
+      );
+
+      const parser = new NpmResolutionParser();
+      const summary = await parser.parse(workspacePath, "existing-lockfile");
+
+      expect(summary.totalDependencies).toBe(3); // a, b, c
+      const graph = summary.graph!;
+      expect(graph.nodes.length).toBe(4); // root, a, b, c
+
+      const cNode = graph.nodes.find((n) => n.id === "npm:c@1.0.0")!;
+      expect(cNode).toBeDefined();
+      expect(cNode.parents).toContain("npm:a@1.0.0");
+      expect(cNode.parents).toContain("npm:b@1.0.0");
+      expect(cNode.isDirect).toBe(false);
+      expect(cNode.isTransitive).toBe(true);
+    });
+
+    it("handles workspace monorepo link structures", async () => {
+      const workspacePath = join(TEST_DIR, "workspace-monorepo");
+      const manifestsDir = join(workspacePath, "manifests");
+      mkdirSync(manifestsDir, { recursive: true });
+
+      const packageJson = {
+        name: "monorepo-root",
+        version: "1.0.0",
+        dependencies: {
+          "pkg-b": "^1.0.0",
+        },
+      };
+
+      const packageLock = {
+        name: "monorepo-root",
+        version: "1.0.0",
+        lockfileVersion: 3,
+        packages: {
+          "": {
+            name: "monorepo-root",
+            version: "1.0.0",
+            dependencies: {
+              "pkg-b": "^1.0.0",
+            },
+          },
+          "packages/pkg-a": {
+            name: "pkg-a",
+            version: "1.2.3",
+            dependencies: {
+              lodash: "^4.17.21",
+            },
+          },
+          "packages/pkg-b": {
+            name: "pkg-b",
+            version: "1.0.0",
+            dependencies: {
+              "pkg-a": "^1.0.0",
+            },
+          },
+          "node_modules/lodash": {
+            version: "4.17.21",
+          },
+          "node_modules/pkg-a": {
+            resolved: "packages/pkg-a",
+            link: true,
+          },
+          "node_modules/pkg-b": {
+            resolved: "packages/pkg-b",
+            link: true,
+          },
+        },
+      };
+
+      writeFileSync(join(manifestsDir, "package.json"), JSON.stringify(packageJson, null, 2));
+      writeFileSync(
+        join(manifestsDir, "package-lock.json"),
+        JSON.stringify(packageLock, null, 2),
+      );
+
+      const parser = new NpmResolutionParser();
+      const summary = await parser.parse(workspacePath, "existing-lockfile");
+
+      const graph = summary.graph!;
+      expect(graph.nodes.length).toBe(4); // root, pkg-b, pkg-a, lodash
+
+      const pkgBNode = graph.nodes.find((n) => n.name === "pkg-b")!;
+      const pkgANode = graph.nodes.find((n) => n.name === "pkg-a")!;
+      const lodashNode = graph.nodes.find((n) => n.name === "lodash")!;
+
+      expect(pkgBNode.version).toBe("1.0.0");
+      expect(pkgANode.version).toBe("1.2.3"); // retrieved from targetPkg
+      expect(lodashNode.version).toBe("4.17.21");
+
+      expect(pkgBNode.children).toContain(pkgANode.id);
+      expect(pkgANode.children).toContain(lodashNode.id);
+    });
+
+    it("parses lockfile v1 (dependencies tree) format correctly", async () => {
+      const workspacePath = join(TEST_DIR, "workspace-lock-v1");
+      const manifestsDir = join(workspacePath, "manifests");
+      mkdirSync(manifestsDir, { recursive: true });
+
+      const packageJson = {
+        name: "v1-app",
+        version: "1.0.0",
+        dependencies: {
+          foo: "^1.0.0",
+        },
+      };
+
+      const packageLock = {
+        name: "v1-app",
+        version: "1.0.0",
+        lockfileVersion: 1,
+        dependencies: {
+          foo: {
+            version: "1.0.0",
+            requires: {
+              bar: "^2.0.0",
+            },
+            dependencies: {
+              bar: {
+                version: "2.0.0",
+              },
+            },
+          },
+        },
+      };
+
+      writeFileSync(join(manifestsDir, "package.json"), JSON.stringify(packageJson, null, 2));
+      writeFileSync(
+        join(manifestsDir, "package-lock.json"),
+        JSON.stringify(packageLock, null, 2),
+      );
+
+      const parser = new NpmResolutionParser();
+      const summary = await parser.parse(workspacePath, "existing-lockfile");
+
+      expect(summary.totalDependencies).toBe(2);
+      const graph = summary.graph!;
+      expect(graph.nodes.length).toBe(3); // root, foo, bar
+
+      const fooNode = graph.nodes.find((n) => n.id === "npm:foo@1.0.0")!;
+      const barNode = graph.nodes.find((n) => n.id === "npm:bar@2.0.0")!;
+
+      expect(fooNode.isDirect).toBe(true);
+      expect(fooNode.isTransitive).toBe(false);
+      expect(barNode.isDirect).toBe(false);
+      expect(barNode.isTransitive).toBe(true);
+
+      expect(fooNode.children).toContain(barNode.id);
+      expect(barNode.parents).toContain(fooNode.id);
+    });
   });
 
   describe("DependencyResolutionService", () => {
@@ -165,6 +486,25 @@ describe("Dependency Resolution Engine", () => {
       expect(content.resolutionSource).toBe("existing-lockfile");
       expect(content.directDependencies).toBe(2);
       expect(content.totalDependencies).toBe(3);
+
+      const graphJsonPath = join(
+        TEST_DIR,
+        workspace.id,
+        "runs",
+        run.id,
+        "dependency-graph.json",
+      );
+      expect(existsSync(graphJsonPath)).toBe(true);
+
+      const graphContent = JSON.parse(readFileSync(graphJsonPath, "utf8")) as Record<
+        string,
+        unknown
+      >;
+      expect(graphContent.schemaVersion).toBe(1);
+      expect(graphContent.projectType).toBe("node");
+      expect(graphContent.packageManager).toBe("npm");
+      expect(Array.isArray(graphContent.nodes)).toBe(true);
+      expect(Array.isArray(graphContent.edges)).toBe(true);
     });
 
     it("resolves and persists metadata for project without lockfile", async () => {
@@ -188,6 +528,15 @@ describe("Dependency Resolution Engine", () => {
         "dependency-resolution.json",
       );
       expect(existsSync(resolutionJsonPath)).toBe(true);
+
+      const graphJsonPath = join(
+        TEST_DIR,
+        workspace.id,
+        "runs",
+        run.id,
+        "dependency-graph.json",
+      );
+      expect(existsSync(graphJsonPath)).toBe(true);
     });
 
     it("handles failed resolution for invalid package.json", async () => {

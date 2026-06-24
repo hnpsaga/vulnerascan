@@ -10,6 +10,11 @@ export interface VulnerabilityReference {
   url: string;
 }
 
+export interface VulnerabilitySeverity {
+  type: string;
+  score: string;
+}
+
 export interface VulnerabilityRecord {
   id: string;
   aliases: string[];
@@ -17,6 +22,7 @@ export interface VulnerabilityRecord {
   details?: string;
   references: VulnerabilityReference[];
   affectedPackages: PackageCoordinate[];
+  severity?: VulnerabilitySeverity[];
 }
 
 export interface ProviderResponse {

@@ -71,8 +71,6 @@ export const scanCommand = new Command("scan")
         if (resolution.graph) {
           const home = process.env.VULNERASCAN_HOME || homedir();
           const workspacesBaseDir = path.join(home, ".vulnerascan", "workspaces");
-          const workspaceDir = path.join(workspacesBaseDir, workspace.id);
-          const cacheDir = path.join(workspaceDir, "cache");
           const runDir = path.join(workspacesBaseDir, workspace.id, "runs", run.id);
 
           const config = loadConfig();
@@ -80,8 +78,9 @@ export const scanCommand = new Command("scan")
 
           let cache: FilesystemVulnerabilityCache | undefined = undefined;
           if (config.provider.osv?.cache.enabled) {
+            const globalCacheDir = path.join(home, ".vulnerascan", "cache", "osv");
             cache = new FilesystemVulnerabilityCache(
-              path.join(cacheDir, "osv"),
+              globalCacheDir,
               config.provider.osv.cache.ttlHours,
             );
           }

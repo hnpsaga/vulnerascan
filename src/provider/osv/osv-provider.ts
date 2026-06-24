@@ -17,6 +17,10 @@ interface OsvVulnerability {
     type: string;
     url: string;
   }>;
+  severity?: Array<{
+    type: string;
+    score: string;
+  }>;
 }
 
 export function mapToOsvEcosystem(ecosystem: string): string {
@@ -65,6 +69,7 @@ export function normalizeVulnerability(
       url: ref.url,
     })),
     affectedPackages: [affectedPkg],
+    severity: osv.severity,
   };
 }
 

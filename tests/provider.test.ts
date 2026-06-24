@@ -294,6 +294,7 @@ describe.sequential("OSV Vulnerability Provider", () => {
         summary: "SQL Injection in some-pkg",
         details: "Long details explanation here",
         references: [{ type: "ADVISORY", url: "https://advisories.example.com/GHSA-abc-123" }],
+        severity: [{ type: "CVSS_V3", score: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" }],
       },
     };
 
@@ -313,6 +314,10 @@ describe.sequential("OSV Vulnerability Provider", () => {
     expect(record.references[0].url).toBe("https://advisories.example.com/GHSA-abc-123");
     expect(record.affectedPackages).toHaveLength(1);
     expect(record.affectedPackages[0].packageName).toBe("some-pkg");
+    expect(record.severity).toBeDefined();
+    expect(record.severity).toHaveLength(1);
+    expect(record.severity![0].type).toBe("CVSS_V3");
+    expect(record.severity![0].score).toBe("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H");
   });
 
   it("retries on server errors (5xx) and eventually succeeds", async () => {

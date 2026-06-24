@@ -162,7 +162,7 @@ To minimize network calls and respect API usage, a local cache is implemented:
 
 - **Interface**: `VulnerabilityCache` specifies `get(coordinate)` and `set(coordinate, vulnerabilities)`.
 - **FS Cache Implementation**: `FilesystemVulnerabilityCache` persists vulnerability records at the package-coordinate level.
-- **Cache File Naming**: Safe, sanitized file names inside the workspace directory, e.g. `.vulnerascan/workspaces/<workspace-id>/cache/osv/npm-lodash-4.17.20.json`.
+- **Cache File Naming**: Safe, sanitized file names inside the global cache directory, e.g. `.vulnerascan/cache/osv/npm-lodash-4.17.20.json`.
 - **TTL Support**: Cache files older than `ttlHours` are automatically ignored and overwritten on subsequent scans.
 
 ---

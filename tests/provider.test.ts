@@ -7,8 +7,7 @@ import {
   loadConfig,
   DEFAULT_CONFIG,
   FilesystemVulnerabilityCache,
-  OsvVulnerabilityProvider,
-  ProviderRegistry,
+  OsvClient,
   PackageCoordinate,
   VulnerabilityRecord,
 } from "../src/index.js";
@@ -91,89 +90,48 @@ beforeEach(() => {
   mockResponseBehavior = {};
 });
 
-describe("Vulnerability Provider Configuration", () => {
+describe("Vulnerability Configuration", () => {
   it("defines standard default configuration", () => {
-    expect(DEFAULT_CONFIG.provider.active).toBe("osv");
-    expect(DEFAULT_CONFIG.provider.osv?.cache.enabled).toBe(true);
-    expect(DEFAULT_CONFIG.provider.osv?.cache.ttlHours).toBe(24);
+    expect(DEFAULT_CONFIG.cache.enabled).toBe(true);
+    expect(DEFAULT_CONFIG.cache.ttlHours).toBe(24);
   });
 
   it("loads defaults when configuration file does not exist", () => {
     const nonExistentPath = join(TEST_DIR, "non-existent-config.json");
     const loaded = loadConfig(nonExistentPath);
-    expect(loaded.provider.active).toBe("osv");
-    expect(loaded.provider.osv?.cache.enabled).toBe(true);
+    expect(loaded.cache.enabled).toBe(true);
   });
 
   it("validates correct configurations successfully", () => {
     const valid = {
-      provider: {
-        active: "osv",
-        osv: {
-          cache: {
-            enabled: false,
-            ttlHours: 12,
-          },
-        },
+      cache: {
+        enabled: false,
+        ttlHours: 12,
       },
     };
 
     const validated = validateConfig(valid);
-    expect(validated.provider.active).toBe("osv");
-    expect(validated.provider.osv?.cache.enabled).toBe(false);
-    expect(validated.provider.osv?.cache.ttlHours).toBe(12);
+    expect(validated.cache.enabled).toBe(false);
+    expect(validated.cache.ttlHours).toBe(12);
   });
 
   it("throws validation errors for invalid configurations", () => {
     expect(() => validateConfig(null)).toThrow("Configuration must be a valid JSON object");
-    expect(() => validateConfig({})).toThrow("Missing 'provider' configuration section");
-    expect(() => validateConfig({ provider: {} })).toThrow(
-      "'provider.active' must be a non-empty string",
-    );
-    expect(() => validateConfig({ provider: { active: "github" } })).toThrow(
-      "Unsupported provider",
-    );
     expect(() =>
       validateConfig({
-        provider: {
-          active: "osv",
-          osv: { cache: "not-an-object" },
-        },
+        cache: "not-an-object",
       }),
-    ).toThrow("'provider.osv.cache' must be an object");
+    ).toThrow("'cache' must be an object");
     expect(() =>
       validateConfig({
-        provider: {
-          active: "osv",
-          osv: { cache: { enabled: "not-a-boolean" } },
-        },
+        cache: { enabled: "not-a-boolean" },
       }),
-    ).toThrow("'provider.osv.cache.enabled' must be a boolean");
+    ).toThrow("'cache.enabled' must be a boolean");
     expect(() =>
       validateConfig({
-        provider: {
-          active: "osv",
-          osv: { cache: { ttlHours: -1 } },
-        },
+        cache: { ttlHours: -1 },
       }),
-    ).toThrow("'provider.osv.cache.ttlHours' must be a non-negative number");
-  });
-});
-
-describe("Vulnerability Provider Registry", () => {
-  it("registers and resolves providers correctly", () => {
-    const registry = new ProviderRegistry();
-    const provider = new OsvVulnerabilityProvider();
-    registry.register(provider);
-
-    expect(registry.getRegisteredNames()).toContain("osv");
-    expect(registry.resolve("osv")).toBe(provider);
-    expect(registry.resolve("OSV")).toBe(provider); // Case insensitivity
-  });
-
-  it("throws when resolving unregistered providers", () => {
-    const registry = new ProviderRegistry();
-    expect(() => registry.resolve("nvd")).toThrow("is not registered");
+    ).toThrow("'cache.ttlHours' must be a non-negative number");
   });
 });
 
@@ -265,9 +223,9 @@ describe("Vulnerability Cache", () => {
   });
 });
 
-describe.sequential("OSV Vulnerability Provider", () => {
+describe.sequential("OSV Vulnerability Client", () => {
   it("handles successful empty responses", async () => {
-    const provider = new OsvVulnerabilityProvider({ apiUrl: mockServerUrl });
+    const client = new OsvClient({ apiUrl: mockServerUrl });
     mockResponseBehavior.status = 200;
     mockResponseBehavior.queryBatchBody = {
       results: [{ vulns: [] }],
@@ -277,7 +235,7 @@ describe.sequential("OSV Vulnerability Provider", () => {
       { ecosystem: "npm", packageName: "safe-pkg", version: "1.0.0" },
     ];
 
-    const response = await provider.queryPackages(coordinates);
+    const response = await client.queryPackages(coordinates);
     expect(response.provider).toBe("osv");
     expect(response.vulnerabilities).toHaveLength(0);
     expect(response.metadata?.totalPackages).toBe(1);
@@ -285,7 +243,7 @@ describe.sequential("OSV Vulnerability Provider", () => {
   });
 
   it("queries OSV API and normalizes responses properly", async () => {
-    const provider = new OsvVulnerabilityProvider({ apiUrl: mockServerUrl });
+    const client = new OsvClient({ apiUrl: mockServerUrl });
 
     // Mock querybatch to return a vulnerability ID
     mockResponseBehavior.status = 200;
@@ -314,7 +272,7 @@ describe.sequential("OSV Vulnerability Provider", () => {
       { ecosystem: "npm", packageName: "some-pkg", version: "2.0.0" },
     ];
 
-    const response = await provider.queryPackages(coordinates);
+    const response = await client.queryPackages(coordinates);
     expect(response.vulnerabilities).toHaveLength(1);
 
     const record = response.vulnerabilities[0];
@@ -333,7 +291,7 @@ describe.sequential("OSV Vulnerability Provider", () => {
   });
 
   it("retries on server errors (5xx) and eventually succeeds", async () => {
-    const provider = new OsvVulnerabilityProvider({ apiUrl: mockServerUrl });
+    const client = new OsvClient({ apiUrl: mockServerUrl });
 
     mockResponseBehavior.statusSequence = [500, 500, 200];
     mockResponseBehavior.queryBatchBody = { results: [{ vulns: [] }] };
@@ -342,13 +300,13 @@ describe.sequential("OSV Vulnerability Provider", () => {
       { ecosystem: "npm", packageName: "some-pkg", version: "2.0.0" },
     ];
 
-    const response = await provider.queryPackages(coordinates);
+    const response = await client.queryPackages(coordinates);
     expect(response.vulnerabilities).toHaveLength(0);
     expect(mockResponseBehavior.requestCount).toBe(3); // 2 failures + 1 success
   });
 
   it("throws error after retrying and failing max limit times", async () => {
-    const provider = new OsvVulnerabilityProvider({ apiUrl: mockServerUrl });
+    const client = new OsvClient({ apiUrl: mockServerUrl });
 
     mockResponseBehavior.status = 500;
     mockResponseBehavior.queryBatchBody = { error: "Internal Server Error" };
@@ -357,12 +315,12 @@ describe.sequential("OSV Vulnerability Provider", () => {
       { ecosystem: "npm", packageName: "some-pkg", version: "2.0.0" },
     ];
 
-    await expect(provider.queryPackages(coordinates)).rejects.toThrow("failed with status 500");
+    await expect(client.queryPackages(coordinates)).rejects.toThrow("failed with status 500");
     expect(mockResponseBehavior.requestCount).toBe(4); // 1 initial + 3 retries
   });
 
   it("handles fetch timeouts gracefully", async () => {
-    const provider = new OsvVulnerabilityProvider({ apiUrl: mockServerUrl, timeoutMs: 50 });
+    const client = new OsvClient({ apiUrl: mockServerUrl, timeoutMs: 50 });
 
     mockResponseBehavior.delayMs = 150; // Delay longer than timeout
     mockResponseBehavior.queryBatchBody = { results: [] };
@@ -371,6 +329,6 @@ describe.sequential("OSV Vulnerability Provider", () => {
       { ecosystem: "npm", packageName: "some-pkg", version: "2.0.0" },
     ];
 
-    await expect(provider.queryPackages(coordinates)).rejects.toThrow();
+    await expect(client.queryPackages(coordinates)).rejects.toThrow();
   });
 });

@@ -107,7 +107,8 @@ The backend processing is structured into three distinct, decoupled sub-layers:
 ### 3. Dependency Graph Generation
 
 - **Responsibility**: Constructing a pure, structural representation of resolved project dependencies.
-- **Design Principle**: The dependency graph (`dependency-graph.json`) is a pure structural representation modeling package relationships (depth, parents, children, direct vs transitive). It contains no vulnerability-specific logic, AI-generated content, or OSV-specific data.
+- **Design Principle**: The dependency graph (`dependency-graph.json`) is a pure structural representation modeling package relationships and parent/child links. It contains no vulnerability-specific logic, AI-generated content, or OSV-specific data.
+- **Derived Metadata**: Helper node attributes such as `depth` (computed via BFS as the shortest dependency distance from the project root) are calculated during this generation phase to simplify downstream analysis. These values are derived metadata rather than persisted intrinsic source truths, and can always be recalculated if the graph structure changes.
 - **Downstream Consumption**: Future vulnerability detection, scoring, and remediation tools consume these stable dependency graph and resolution artifacts rather than modifying them, preserving clean separation of concerns.
 
 For full details on the graph data model, node/edge representation, and generation process, refer to the [Dependency Graph Engine Documentation](./dependency-graph.md).

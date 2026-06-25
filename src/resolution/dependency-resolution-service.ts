@@ -8,6 +8,7 @@ import { ProjectType } from "../models/project-type.js";
 import { RESOLUTION_SCHEMA_VERSION } from "../workspace/constants.js";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import { homedir } from "os";
 
 export class DependencyResolutionService {
@@ -78,8 +79,44 @@ export class DependencyResolutionService {
       // 3. Parse lockfile
       const summary = await resolutionParser.parse(workspaceDir, resolutionSource);
 
+      const manifestPath = path.join(workspace.sourcePath, "package.json");
+      let sourceLockName = "";
+      if (hasLock) {
+        if (fs.existsSync(path.join(workspaceDir, "manifests", "package-lock.json"))) {
+          sourceLockName = "package-lock.json";
+        } else if (fs.existsSync(path.join(workspaceDir, "manifests", "npm-shrinkwrap.json"))) {
+          sourceLockName = "npm-shrinkwrap.json";
+        }
+      }
+      const lockfilePath = hasLock
+        ? path.join(workspace.sourcePath, sourceLockName)
+        : path.join(workspaceDir, "generated", "package-lock.json");
+
+      const manifestHash = crypto
+        .createHash("sha256")
+        .update(fs.readFileSync(path.join(workspaceDir, "manifests", "package.json")))
+        .digest("hex");
+
+      const lockfileHash = crypto
+        .createHash("sha256")
+        .update(
+          fs.readFileSync(
+            hasLock
+              ? path.join(workspaceDir, "manifests", sourceLockName)
+              : path.join(workspaceDir, "generated", "package-lock.json"),
+          ),
+        )
+        .digest("hex");
+
       const successArtifact: DependencyResolution = {
         schemaVersion: RESOLUTION_SCHEMA_VERSION,
+        workspaceId: workspace.id,
+        projectId: workspace.id,
+        scanId: run.id,
+        manifestPath,
+        lockfilePath,
+        manifestHash,
+        lockfileHash,
         projectType: workspace.projectType,
         packageManager: "npm",
         resolutionSource,

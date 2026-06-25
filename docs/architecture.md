@@ -91,13 +91,24 @@ Each command is an isolated Commander `Command` object exported from its own mod
 
 ---
 
-## Scanner Layer
+## Scanner & Resolution Layer
 
-The scanner layer is responsible for:
+The backend processing is structured into three distinct, decoupled sub-layers:
 
-1. Discovering project manifests (e.g. `package.json`, `pom.xml`, `requirements.txt`, etc.).
-2. Building a resolved, ecosystem-agnostic dependency graph of all direct and transitive dependencies.
-3. Persisting the results as a deterministic graph artifact (`dependency-graph.json`).
+### 1. Project Discovery
+
+- **Responsibility**: Locating supported project manifests (e.g., `package.json`, `pom.xml`, `requirements.txt`, etc.), identifying the project's ecosystem, and registering the project within a workspace.
+- **Important**: Discovered project types are not automatically supported for full dependency analysis. Only Node.js/npm is fully supported for dependency resolution and graph generation at this time.
+
+### 2. Dependency Resolution
+
+- **Responsibility**: Resolving dependencies, reading lockfiles, preparing dependency metadata, and persisting resolution details (workspace/project/scan identifiers, manifest/lockfile paths, and hashes for future historical/incremental scanning).
+
+### 3. Dependency Graph Generation
+
+- **Responsibility**: Constructing a pure, structural representation of resolved project dependencies.
+- **Design Principle**: The dependency graph (`dependency-graph.json`) is a pure structural representation modeling package relationships (depth, parents, children, direct vs transitive). It contains no vulnerability-specific logic, AI-generated content, or OSV-specific data.
+- **Downstream Consumption**: Future vulnerability detection, scoring, and remediation tools consume these stable dependency graph and resolution artifacts rather than modifying them, preserving clean separation of concerns.
 
 For full details on the graph data model, node/edge representation, and generation process, refer to the [Dependency Graph Engine Documentation](./dependency-graph.md).
 

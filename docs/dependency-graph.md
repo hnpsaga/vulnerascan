@@ -43,6 +43,9 @@ Each node represents a unique package version resolved in the project workspace,
 | `isTransitive`   | `boolean`  | Flag indicating if this package is a transitive dependency introduced by another package. |
 | `parents`        | `string[]` | Alphabetically sorted array of parent node IDs.                                           |
 | `children`       | `string[]` | Alphabetically sorted array of child node IDs.                                            |
+| `depth`          | `number`   | Shortest path distance (depth) from the root package (0 for the root project itself).     |
+| `packageManager` | `string`   | Optional/Reference to the package manager that resolved the package (e.g., `"npm"`).      |
+| `manifest`       | `string`   | Optional/Reference to the manifest file specifying the package (e.g., `"package.json"`).  |
 
 ---
 
@@ -74,7 +77,10 @@ Here is an example output generated for a project with one direct dependency (`f
       "isDirect": true,
       "isTransitive": false,
       "parents": ["npm:node-with-lockfile@1.0.0"],
-      "children": ["npm:baz@3.0.0"]
+      "children": ["npm:baz@3.0.0"],
+      "depth": 1,
+      "packageManager": "npm",
+      "manifest": "package.json"
     },
     {
       "id": "npm:baz@3.0.0",
@@ -85,7 +91,10 @@ Here is an example output generated for a project with one direct dependency (`f
       "isDirect": false,
       "isTransitive": true,
       "parents": ["npm:bar@2.0.0"],
-      "children": []
+      "children": [],
+      "depth": 2,
+      "packageManager": "npm",
+      "manifest": "package.json"
     },
     {
       "id": "npm:foo@1.0.0",
@@ -96,7 +105,10 @@ Here is an example output generated for a project with one direct dependency (`f
       "isDirect": true,
       "isTransitive": false,
       "parents": ["npm:node-with-lockfile@1.0.0"],
-      "children": []
+      "children": [],
+      "depth": 1,
+      "packageManager": "npm",
+      "manifest": "package.json"
     },
     {
       "id": "npm:node-with-lockfile@1.0.0",
@@ -107,7 +119,10 @@ Here is an example output generated for a project with one direct dependency (`f
       "isDirect": false,
       "isTransitive": false,
       "parents": [],
-      "children": ["npm:bar@2.0.0", "npm:foo@1.0.0"]
+      "children": ["npm:bar@2.0.0", "npm:foo@1.0.0"],
+      "depth": 0,
+      "packageManager": "npm",
+      "manifest": "package.json"
     }
   ],
   "edges": [

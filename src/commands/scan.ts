@@ -8,7 +8,7 @@ import { formatDisplayDate } from "../utils/date.js";
 import { homedir } from "os";
 import path from "path";
 import fs from "fs";
-import { loadConfig } from "../provider/config/vulnerascan-config.js";
+import { loadConfig } from "../provider/config/config.js";
 import { FilesystemVulnerabilityCache } from "../provider/cache/filesystem-cache.js";
 import { OsvClient } from "../provider/osv/osv-client.js";
 

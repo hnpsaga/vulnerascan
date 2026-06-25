@@ -1,9 +1,4 @@
-import {
-  PackageCoordinate,
-  VulnerabilityRecord,
-  ProviderResponse,
-} from "../models/provider-models.js";
-import { VulnerabilityProvider } from "../interfaces/vulnerability-provider.js";
+import { PackageCoordinate, VulnerabilityRecord } from "../models/vulnerability-models.js";
 import { VulnerabilityCache } from "../interfaces/vulnerability-cache.js";
 
 interface OsvVulnerability {
@@ -166,7 +161,18 @@ async function limitConcurrency<T, R>(
   return results;
 }
 
-export class OsvVulnerabilityProvider implements VulnerabilityProvider {
+export interface OsvScanResult {
+  provider: string;
+  vulnerabilities: VulnerabilityRecord[];
+  metadata?: {
+    timestamp: string;
+    totalPackages: number;
+    cacheHits: number;
+    networkQueries: number;
+  };
+}
+
+export class OsvClient {
   readonly name = "osv";
   private cache?: VulnerabilityCache;
   private apiUrl: string;
@@ -192,7 +198,7 @@ export class OsvVulnerabilityProvider implements VulnerabilityProvider {
     };
   }
 
-  async queryPackages(packages: PackageCoordinate[]): Promise<ProviderResponse> {
+  async queryPackages(packages: PackageCoordinate[]): Promise<OsvScanResult> {
     if (process.env.VULNERASCAN_TEST_MODE === "true") {
       return {
         provider: this.name,

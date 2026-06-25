@@ -1,4 +1,4 @@
-import { PackageCoordinate, VulnerabilityRecord } from "../models/provider-models.js";
+import { PackageCoordinate, VulnerabilityRecord } from "../models/vulnerability-models.js";
 import { VulnerabilityCache } from "../interfaces/vulnerability-cache.js";
 import path from "path";
 import fs from "fs";

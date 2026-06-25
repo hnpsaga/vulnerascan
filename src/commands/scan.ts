@@ -8,10 +8,9 @@ import { formatDisplayDate } from "../utils/date.js";
 import { homedir } from "os";
 import path from "path";
 import fs from "fs";
-import { loadConfig } from "../provider/config/provider-config.js";
+import { loadConfig } from "../provider/config/vulnerascan-config.js";
 import { FilesystemVulnerabilityCache } from "../provider/cache/filesystem-cache.js";
-import { OsvVulnerabilityProvider } from "../provider/osv/osv-provider.js";
-import { ProviderRegistry } from "../provider/registry/provider-registry.js";
+import { OsvClient } from "../provider/osv/osv-client.js";
 
 interface ScanOptions {
   name?: string;
@@ -74,22 +73,14 @@ export const scanCommand = new Command("scan")
           const runDir = path.join(workspacesBaseDir, workspace.id, "runs", run.id);
 
           const config = loadConfig();
-          const activeProviderName = config.provider.active;
 
           let cache: FilesystemVulnerabilityCache | undefined = undefined;
-          if (config.provider.osv?.cache.enabled) {
+          if (config.cache.enabled) {
             const globalCacheDir = path.join(home, ".vulnerascan", "cache", "osv");
-            cache = new FilesystemVulnerabilityCache(
-              globalCacheDir,
-              config.provider.osv.cache.ttlHours,
-            );
+            cache = new FilesystemVulnerabilityCache(globalCacheDir, config.cache.ttlHours);
           }
 
-          const registry = new ProviderRegistry();
-          const osvProvider = new OsvVulnerabilityProvider({ cache });
-          registry.register(osvProvider);
-
-          const provider = registry.resolve(activeProviderName);
+          const osvClient = new OsvClient({ cache });
 
           const coordinates = (resolution.graph.nodes || [])
             .filter((node) => node.parents.length > 0)
@@ -100,8 +91,8 @@ export const scanCommand = new Command("scan")
             }));
 
           console.log();
-          console.log(`Querying ${activeProviderName.toUpperCase()} for vulnerabilities...`);
-          const response = await provider.queryPackages(coordinates);
+          console.log("Querying OSV for vulnerabilities...");
+          const response = await osvClient.queryPackages(coordinates);
 
           const providerResultsPath = path.join(runDir, "provider-results.json");
           const artifact = {

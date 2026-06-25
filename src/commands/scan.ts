@@ -119,6 +119,16 @@ export const scanCommand = new Command("scan")
 
           console.log(`Vulnerabilities found: ${response.vulnerabilities.length}`);
         }
+      } else {
+        console.log();
+        console.log(
+          `Dependency resolution and vulnerability scanning are not yet supported for ${getProjectTypeDisplayName(
+            project.type,
+          )} projects.`,
+        );
+        console.log(
+          "Currently, only Node.js/npm projects are supported for full dependency analysis.",
+        );
       }
     } catch (error) {
       console.error("Scan failed:", error);

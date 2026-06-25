@@ -200,6 +200,9 @@ export class NpmResolutionParser implements ResolutionParser {
       isTransitive: false,
       parents: [],
       children: [],
+      depth: 0,
+      packageManager: "npm",
+      manifest: "package.json",
     });
 
     const edgesList: DependencyEdge[] = [];
@@ -217,6 +220,7 @@ export class NpmResolutionParser implements ResolutionParser {
       path: string;
       nodeId: string;
       type: "production" | "development" | "optional" | "peer";
+      depth: number;
     }
     const queue: QueueItem[] = [];
 
@@ -226,7 +230,7 @@ export class NpmResolutionParser implements ResolutionParser {
       if (childPath) {
         const pkg = packagesMap.get(childPath)!;
         const depNodeId = `npm:${pkg.name}@${pkg.version}`;
-        queue.push({ path: childPath, nodeId: depNodeId, type: "production" });
+        queue.push({ path: childPath, nodeId: depNodeId, type: "production", depth: 1 });
         addEdge(rootId, depNodeId);
       }
     }
@@ -236,7 +240,7 @@ export class NpmResolutionParser implements ResolutionParser {
       if (childPath) {
         const pkg = packagesMap.get(childPath)!;
         const depNodeId = `npm:${pkg.name}@${pkg.version}`;
-        queue.push({ path: childPath, nodeId: depNodeId, type: "development" });
+        queue.push({ path: childPath, nodeId: depNodeId, type: "development", depth: 1 });
         addEdge(rootId, depNodeId);
       }
     }
@@ -246,7 +250,7 @@ export class NpmResolutionParser implements ResolutionParser {
       if (childPath) {
         const pkg = packagesMap.get(childPath)!;
         const depNodeId = `npm:${pkg.name}@${pkg.version}`;
-        queue.push({ path: childPath, nodeId: depNodeId, type: "optional" });
+        queue.push({ path: childPath, nodeId: depNodeId, type: "optional", depth: 1 });
         addEdge(rootId, depNodeId);
       }
     }
@@ -256,7 +260,7 @@ export class NpmResolutionParser implements ResolutionParser {
       if (childPath) {
         const pkg = packagesMap.get(childPath)!;
         const depNodeId = `npm:${pkg.name}@${pkg.version}`;
-        queue.push({ path: childPath, nodeId: depNodeId, type: "peer" });
+        queue.push({ path: childPath, nodeId: depNodeId, type: "peer", depth: 1 });
         addEdge(rootId, depNodeId);
       }
     }
@@ -267,7 +271,7 @@ export class NpmResolutionParser implements ResolutionParser {
     >();
 
     while (queue.length > 0) {
-      const { path: currentPath, nodeId, type } = queue.shift()!;
+      const { path: currentPath, nodeId, type, depth } = queue.shift()!;
       const pkg = packagesMap.get(currentPath)!;
 
       let node = nodesMap.get(nodeId);
@@ -282,10 +286,14 @@ export class NpmResolutionParser implements ResolutionParser {
           isTransitive: false,
           parents: [],
           children: [],
+          depth,
+          packageManager: "npm",
+          manifest: "package.json",
         };
         nodesMap.set(nodeId, node);
       } else {
         node.dependencyType = getMorePrecedentType(node.dependencyType, type);
+        node.depth = Math.min(node.depth, depth);
       }
 
       const prevMaxType = visitedPathsMaxType.get(currentPath);
@@ -320,6 +328,7 @@ export class NpmResolutionParser implements ResolutionParser {
               path: childPath,
               nodeId: childNodeId,
               type: childType,
+              depth: depth + 1,
             });
           }
         }

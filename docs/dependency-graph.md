@@ -32,17 +32,20 @@ The output artifact is named `dependency-graph.json` and is saved within the sca
 
 Each node represents a unique package version resolved in the project workspace, including the root application itself.
 
-| Field            | Type       | Description                                                                               |
-| ---------------- | ---------- | ----------------------------------------------------------------------------------------- |
-| `id`             | `string`   | Stable ecosystem-scoped package identifier (e.g., `"npm:foo@1.0.0"`).                     |
-| `name`           | `string`   | Name of the package (e.g., `"foo"`).                                                      |
-| `version`        | `string`   | Resolved package version (e.g., `"1.0.0"`).                                               |
-| `ecosystem`      | `string`   | Target package ecosystem (e.g., `"npm"`).                                                 |
-| `dependencyType` | `string`   | The dependency type category: `"production"`, `"development"`, `"optional"`, or `"peer"`. |
-| `isDirect`       | `boolean`  | Flag indicating if this package is a direct dependency of the root project.               |
-| `isTransitive`   | `boolean`  | Flag indicating if this package is a transitive dependency introduced by another package. |
-| `parents`        | `string[]` | Alphabetically sorted array of parent node IDs.                                           |
-| `children`       | `string[]` | Alphabetically sorted array of child node IDs.                                            |
+| Field            | Type       | Description                                                                                                                                                                                                                       |
+| ---------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`             | `string`   | Stable ecosystem-scoped package identifier (e.g., `"npm:foo@1.0.0"`).                                                                                                                                                             |
+| `name`           | `string`   | Name of the package (e.g., `"foo"`).                                                                                                                                                                                              |
+| `version`        | `string`   | Resolved package version (e.g., `"1.0.0"`).                                                                                                                                                                                       |
+| `ecosystem`      | `string`   | Target package ecosystem (e.g., `"npm"`).                                                                                                                                                                                         |
+| `dependencyType` | `string`   | The dependency type category: `"production"`, `"development"`, `"optional"`, or `"peer"`.                                                                                                                                         |
+| `isDirect`       | `boolean`  | Flag indicating if this package is a direct dependency of the root project.                                                                                                                                                       |
+| `isTransitive`   | `boolean`  | Flag indicating if this package is a transitive dependency introduced by another package.                                                                                                                                         |
+| `parents`        | `string[]` | Alphabetically sorted array of parent node IDs.                                                                                                                                                                                   |
+| `children`       | `string[]` | Alphabetically sorted array of child node IDs.                                                                                                                                                                                    |
+| `depth`          | `number`   | Computed/derived metadata representing the shortest dependency distance from the project root (0 for the root project itself), calculated via Breadth-First Search (BFS). It is not an intrinsic property of the graph structure. |
+| `packageManager` | `string`   | Optional/Reference to the package manager that resolved the package (e.g., `"npm"`).                                                                                                                                              |
+| `manifest`       | `string`   | Optional/Reference to the manifest file specifying the package (e.g., `"package.json"`).                                                                                                                                          |
 
 ---
 
@@ -74,7 +77,10 @@ Here is an example output generated for a project with one direct dependency (`f
       "isDirect": true,
       "isTransitive": false,
       "parents": ["npm:node-with-lockfile@1.0.0"],
-      "children": ["npm:baz@3.0.0"]
+      "children": ["npm:baz@3.0.0"],
+      "depth": 1,
+      "packageManager": "npm",
+      "manifest": "package.json"
     },
     {
       "id": "npm:baz@3.0.0",
@@ -85,7 +91,10 @@ Here is an example output generated for a project with one direct dependency (`f
       "isDirect": false,
       "isTransitive": true,
       "parents": ["npm:bar@2.0.0"],
-      "children": []
+      "children": [],
+      "depth": 2,
+      "packageManager": "npm",
+      "manifest": "package.json"
     },
     {
       "id": "npm:foo@1.0.0",
@@ -96,7 +105,10 @@ Here is an example output generated for a project with one direct dependency (`f
       "isDirect": true,
       "isTransitive": false,
       "parents": ["npm:node-with-lockfile@1.0.0"],
-      "children": []
+      "children": [],
+      "depth": 1,
+      "packageManager": "npm",
+      "manifest": "package.json"
     },
     {
       "id": "npm:node-with-lockfile@1.0.0",
@@ -107,7 +119,10 @@ Here is an example output generated for a project with one direct dependency (`f
       "isDirect": false,
       "isTransitive": false,
       "parents": [],
-      "children": ["npm:bar@2.0.0", "npm:foo@1.0.0"]
+      "children": ["npm:bar@2.0.0", "npm:foo@1.0.0"],
+      "depth": 0,
+      "packageManager": "npm",
+      "manifest": "package.json"
     }
   ],
   "edges": [
@@ -136,12 +151,30 @@ The generation process uses a queue-based traversal starting from the root manif
 1. **Manifest Flattening (Lockfile v1)**: If a legacy lockfile (v1) is detected, the recursive dependency tree is flattened into a flat map of virtual `node_modules` path keys to align with the lockfile v2/v3 structure.
 2. **Symlink Workspace Tracking**: Monorepo workspace links (`link: true`) are resolved by reading details from the target workspace directory mapping, ensuring package versions and scopes in workspaces are resolved correctly.
 3. **Queue Initialization**: The queue is initialized with the direct dependencies of the root package categorized by their dependency fields (`dependencies`, `devDependencies`, `optionalDependencies`, `peerDependencies`).
-4. **Breadth-First Traversal**:
+4. **Breadth-First Traversal & Derived Metadata**:
    - Each package path is traversed.
    - Standard Node.js module resolution is simulated to locate the child dependency node's physical path.
+   - A Breadth-First Search (BFS) is executed to calculate the shortest path distance (`depth`) from the project root for each node.
+   - Additional helper metadata, such as `packageManager` and `manifest` references, is assigned during this traversal.
    - Circular dependencies are tracked using a path-to-type lookup, preventing infinite loops while still recording all circular edges.
    - Precedence-based merging (`production` > `development` > `optional` > `peer`) is applied when a package is reached via multiple paths. If a package is visited with a higher-priority type, the new type is recursively propagated to its children.
 5. **Post-Processing**: Parent/child lists are populated on all nodes, and the entire graph structure is sorted alphabetically for deterministic JSON output.
+
+---
+
+## Derived Graph Metadata
+
+The dependency graph consists fundamentally of nodes (packages) and edges (dependencies). Helper properties such as `depth` are **derived/computed metadata** rather than intrinsic attributes of the graph structure.
+
+### Design Philosophy
+
+- **Downstream Simplicity**: Derived metadata is computed during the graph generation phase to simplify downstream consumers (e.g., reporting, filtering, terminal visualizations, and future vulnerability correlation). By embedding these pre-computed helper values, downstream tools can read relationship contexts directly from each node without running expensive graph traversals themselves.
+- **Separation of Concerns**: Calculating graph-derived metadata is strictly the responsibility of the Dependency Graph Generation stage. Downstream stages (like vulnerability analysis or future remediation layers) consume this metadata but do not alter or own it.
+
+### Calculation and Recomputation
+
+- **BFS Computation**: The `depth` property represents the shortest dependency distance from the project root. It is calculated dynamically during graph generation using Breadth-First Search (BFS) traversal.
+- **Transient Nature**: Because `depth` is a derived property, it is not persisted as canonical source truth. If the underlying node or edge structure changes, `depth` must be recalculated to remain valid. Consumers must treat it as computed metadata that can always be reconstructed from the primary nodes and edges.
 
 ---
 

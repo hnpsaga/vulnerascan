@@ -8,6 +8,9 @@ export interface DependencyNode {
   isTransitive: boolean;
   parents: string[]; // Array of parent node IDs
   children: string[]; // Array of child node IDs
+  depth: number; // Dependency depth (0 for root node)
+  packageManager?: string; // Reference to package manager (e.g. "npm")
+  manifest?: string; // Reference to manifest file (e.g. "package.json")
 }
 
 export interface DependencyEdge {

@@ -148,6 +148,9 @@ describe("Dependency Resolution Engine", () => {
       expect(rootNode.ecosystem).toBe("npm");
       expect(rootNode.isDirect).toBe(false);
       expect(rootNode.isTransitive).toBe(false);
+      expect(rootNode.depth).toBe(0);
+      expect(rootNode.packageManager).toBe("npm");
+      expect(rootNode.manifest).toBe("package.json");
 
       const fooNode = graph.nodes.find((n) => n.id === "npm:foo@1.0.0")!;
       expect(fooNode).toBeDefined();
@@ -155,12 +158,18 @@ describe("Dependency Resolution Engine", () => {
       expect(fooNode.isTransitive).toBe(false);
       expect(fooNode.dependencyType).toBe("production");
       expect(fooNode.parents).toContain(rootNode.id);
+      expect(fooNode.depth).toBe(1);
+      expect(fooNode.packageManager).toBe("npm");
+      expect(fooNode.manifest).toBe("package.json");
 
       const barNode = graph.nodes.find((n) => n.id === "npm:bar@2.0.0")!;
       expect(barNode).toBeDefined();
       expect(barNode.isDirect).toBe(true);
       expect(barNode.isTransitive).toBe(false);
       expect(barNode.dependencyType).toBe("development"); // bar is in devDependencies
+      expect(barNode.depth).toBe(1);
+      expect(barNode.packageManager).toBe("npm");
+      expect(barNode.manifest).toBe("package.json");
 
       const bazNode = graph.nodes.find((n) => n.id === "npm:baz@3.0.0")!;
       expect(bazNode).toBeDefined();
@@ -168,6 +177,9 @@ describe("Dependency Resolution Engine", () => {
       expect(bazNode.isTransitive).toBe(true);
       expect(bazNode.dependencyType).toBe("development"); // baz is a child of bar (dev dep)
       expect(bazNode.parents).toContain(barNode.id);
+      expect(bazNode.depth).toBe(2);
+      expect(bazNode.packageManager).toBe("npm");
+      expect(bazNode.manifest).toBe("package.json");
 
       // Verify Edges
       expect(graph.edges).toContainEqual({ source: rootNode.id, target: fooNode.id });
@@ -458,6 +470,13 @@ describe("Dependency Resolution Engine", () => {
       expect(resolution.resolutionSource).toBe("existing-lockfile");
       expect(resolution.directDependencies).toBe(2);
       expect(resolution.totalDependencies).toBe(3);
+      expect(resolution.workspaceId).toBe(workspace.id);
+      expect(resolution.projectId).toBe(workspace.id);
+      expect(resolution.scanId).toBe(run.id);
+      expect(resolution.manifestPath).toBe(join(workspace.sourcePath, "package.json"));
+      expect(resolution.lockfilePath).toBe(join(workspace.sourcePath, "package-lock.json"));
+      expect(resolution.manifestHash).toMatch(/^[a-f0-9]{64}$/);
+      expect(resolution.lockfileHash).toMatch(/^[a-f0-9]{64}$/);
 
       const resolutionJsonPath = join(
         TEST_DIR,
@@ -475,6 +494,13 @@ describe("Dependency Resolution Engine", () => {
       expect(content.resolutionSource).toBe("existing-lockfile");
       expect(content.directDependencies).toBe(2);
       expect(content.totalDependencies).toBe(3);
+      expect(content.workspaceId).toBe(workspace.id);
+      expect(content.projectId).toBe(workspace.id);
+      expect(content.scanId).toBe(run.id);
+      expect(content.manifestPath).toBe(join(workspace.sourcePath, "package.json"));
+      expect(content.lockfilePath).toBe(join(workspace.sourcePath, "package-lock.json"));
+      expect(content.manifestHash).toMatch(/^[a-f0-9]{64}$/);
+      expect(content.lockfileHash).toMatch(/^[a-f0-9]{64}$/);
 
       const graphJsonPath = join(TEST_DIR, workspace.id, "runs", run.id, "dependency-graph.json");
       expect(existsSync(graphJsonPath)).toBe(true);

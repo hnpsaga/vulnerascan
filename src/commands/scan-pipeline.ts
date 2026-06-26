@@ -14,12 +14,13 @@ import fs from "fs";
 export interface ScanPipelineOptions {
   directory: string;
   runName?: string;
+  outputPath?: string;
   onLog?: (message: string) => void;
 }
 
 export class ScanPipeline {
   async execute(options: ScanPipelineOptions): Promise<number> {
-    const { directory, runName, onLog = console.log } = options;
+    const { directory, runName, outputPath, onLog = console.log } = options;
 
     const discovery = new ProjectDiscoveryService();
     const project = await discovery.discover(directory);
@@ -106,13 +107,18 @@ export class ScanPipeline {
           "utf8",
         );
 
-        // Write vulnerabilities.json to user's project working directory
-        const projectVulnerabilitiesPath = path.join(directory, "vulnerabilities.json");
-        await fs.promises.writeFile(
-          projectVulnerabilitiesPath,
-          JSON.stringify(detectionResult, null, 2),
-          "utf8",
-        );
+        // Write vulnerabilities.json to user's specified output directory if provided
+        if (outputPath) {
+          if (!fs.existsSync(outputPath)) {
+            await fs.promises.mkdir(outputPath, { recursive: true });
+          }
+          const projectVulnerabilitiesPath = path.join(outputPath, "vulnerabilities.json");
+          await fs.promises.writeFile(
+            projectVulnerabilitiesPath,
+            JSON.stringify(detectionResult, null, 2),
+            "utf8",
+          );
+        }
 
         onLog(`Findings generated: ${detectionResult.findings.length}`);
 
@@ -121,6 +127,7 @@ export class ScanPipeline {
         const reporter = new Reporter({
           projectDirectory: directory,
           runDirectory: runDir,
+          outputDirectory: outputPath,
         });
         return await reporter.report(detectionResult);
       }

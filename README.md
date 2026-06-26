@@ -62,12 +62,38 @@ All checks passed. VulneraScan is ready.
 
 ### `vulnerascan scan`
 
-Detects the project type and identifies the manifest file:
+Detects the project type, identifies the manifest file, resolves dependencies, and scans for vulnerabilities:
 
-```
+```bash
 $ vulnerascan scan
 Project Type: Node.js
 Manifest: package.json
+```
+
+#### Options
+
+- `-p, --path <path>`: Path to the project directory to scan (default: current working directory).
+- `-o, --output <dir>`: Directory to write generated reports into (Markdown, JSON, CSV). If omitted, reports are only kept in the workspace run history.
+- `-n, --name <name>`: Name of the scan run.
+
+#### Examples
+
+Scan a project at a specific path:
+
+```bash
+vulnerascan scan --path ~/projects/api
+```
+
+Write reports to the current directory:
+
+```bash
+vulnerascan scan --output .
+```
+
+Scan a project at a specific path and write reports to a custom reports directory:
+
+```bash
+vulnerascan scan --path ~/projects/api --output ~/reports
 ```
 
 #### Supported ecosystems

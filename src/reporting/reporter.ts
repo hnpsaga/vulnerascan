@@ -9,6 +9,7 @@ import { CsvReporter } from "./csv-reporter.js";
 export interface ReporterOptions {
   projectDirectory: string;
   runDirectory?: string;
+  outputDirectory?: string;
   quiet?: boolean;
 }
 
@@ -39,34 +40,33 @@ export class Reporter {
       this.terminalReporter.render(result, summary);
     }
 
-    // 2. Markdown report
+    // Prepare content
     const mdContent = this.markdownReporter.generate(result, summary);
-    await fs.promises.writeFile(
-      path.join(this.options.projectDirectory, "vulnerabilities.md"),
-      mdContent,
-      "utf8",
-    );
+    const csvContent = this.csvReporter.generate(result);
+
+    // Write to workspace run directory (canonical storage location)
     if (this.options.runDirectory) {
       await fs.promises.writeFile(
         path.join(this.options.runDirectory, "vulnerabilities.md"),
         mdContent,
         "utf8",
       );
-    }
-
-    // 3. CSV report
-    const csvContent = this.csvReporter.generate(result);
-    await fs.promises.writeFile(
-      path.join(this.options.projectDirectory, "vulnerabilities.csv"),
-      csvContent,
-      "utf8",
-    );
-    if (this.options.runDirectory) {
       await fs.promises.writeFile(
         path.join(this.options.runDirectory, "vulnerabilities.csv"),
         csvContent,
         "utf8",
       );
+    }
+
+    // Write to user-requested output directory
+    if (this.options.outputDirectory) {
+      const outDir = this.options.outputDirectory;
+      if (!fs.existsSync(outDir)) {
+        await fs.promises.mkdir(outDir, { recursive: true });
+      }
+
+      await fs.promises.writeFile(path.join(outDir, "vulnerabilities.md"), mdContent, "utf8");
+      await fs.promises.writeFile(path.join(outDir, "vulnerabilities.csv"), csvContent, "utf8");
     }
 
     // Exit code: 0 if no findings, 1 if findings exist.

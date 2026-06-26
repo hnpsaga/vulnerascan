@@ -1,4 +1,8 @@
-import { PackageCoordinate, VulnerabilityRecord } from "../vulnerability/vulnerability-models.js";
+import {
+  PackageCoordinate,
+  RichVulnerabilityRecord,
+} from "../vulnerability/vulnerability-models.js";
+
 import { OsvVulnerability } from "./models.js";
 
 /**
@@ -41,7 +45,21 @@ export function mapToOsvEcosystem(ecosystem: string): string {
 export function mapOsvVulnerability(
   osv: OsvVulnerability,
   affectedPkg: PackageCoordinate,
-): VulnerabilityRecord {
+): RichVulnerabilityRecord {
+  const affectedDetail = (osv.affected || []).map((aff) => ({
+    ecosystem: aff.package?.ecosystem || "",
+    packageName: aff.package?.name || "",
+    versions: aff.versions || [],
+    ranges: (aff.ranges || []).map((range) => ({
+      type: range.type,
+      events: (range.events || []).map((event) => ({
+        introduced: event.introduced,
+        fixed: event.fixed,
+        lastAffected: event.last_affected,
+      })),
+    })),
+  }));
+
   return {
     id: osv.id,
     aliases: osv.aliases || [],
@@ -54,14 +72,19 @@ export function mapOsvVulnerability(
     })),
     affectedPackages: [affectedPkg],
     severity: osv.severity,
+    published: osv.published,
+    modified: osv.modified,
+    affectedDetail,
   };
 }
 
 /**
  * Merges duplicate VulnerabilityRecords by id, combining their affectedPackages.
  */
-export function mergeVulnerabilityRecords(records: VulnerabilityRecord[]): VulnerabilityRecord[] {
-  const merged = new Map<string, VulnerabilityRecord>();
+export function mergeVulnerabilityRecords(
+  records: RichVulnerabilityRecord[],
+): RichVulnerabilityRecord[] {
+  const merged = new Map<string, RichVulnerabilityRecord>();
   for (const record of records) {
     const existing = merged.get(record.id);
     if (existing) {
@@ -75,10 +98,23 @@ export function mergeVulnerabilityRecords(records: VulnerabilityRecord[]): Vulne
           seen.add(key);
         }
       }
+      // Also combine affectedDetail if present
+      if (record.affectedDetail && existing.affectedDetail) {
+        // Keep unique details or just concat
+        for (const detail of record.affectedDetail) {
+          const detailExists = existing.affectedDetail.some(
+            (d) => d.ecosystem === detail.ecosystem && d.packageName === detail.packageName,
+          );
+          if (!detailExists) {
+            existing.affectedDetail.push(detail);
+          }
+        }
+      }
     } else {
       merged.set(record.id, {
         ...record,
         affectedPackages: [...record.affectedPackages],
+        affectedDetail: record.affectedDetail ? [...record.affectedDetail] : undefined,
       });
     }
   }

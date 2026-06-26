@@ -104,6 +104,9 @@ vulnerascan scan --path ~/projects/api --output ~/reports
 | Maven     | `pom.xml`                             |
 | Gradle    | `build.gradle` / `build.gradle.kts`   |
 | Python    | `requirements.txt` / `pyproject.toml` |
+| Go        | `go.mod` / `go.sum`                   |
+| Rust      | `Cargo.toml` / `Cargo.lock`           |
+| .NET      | `*.csproj` / `packages.lock.json`     |
 
 If no supported project type is detected, the command exits with code 1:
 

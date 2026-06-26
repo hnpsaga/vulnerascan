@@ -1,0 +1,4 @@
+github.com/gin-gonic/gin v1.8.1 h1:410h1Dhy82dGExGqA13nSdBpq2LuNGAnt5EhyENhclU=
+github.com/gin-gonic/gin v1.8.1/go.mod h1:h/j1E77GZwh7D2rYQ9AefcchSshL3vspPzUXWDez0U=
+github.com/mattn/go-isatty v0.0.16 h1:5F0jF68UaW/r6HqYh2KqN07d2H+1Z2r1E8F79/8L/0=
+github.com/mattn/go-isatty v0.0.16/go.mod h1:h/j1E77GZwh7D2rYQ9AefcchSshL3vspPzUXWDez0U=

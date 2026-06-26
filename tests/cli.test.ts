@@ -123,6 +123,36 @@ describe("scan command", () => {
     expect(result.stdout).toContain("Direct Dependencies: 0");
   });
 
+  it("detects Go project in fixture directory", () => {
+    const result = runCLI("scan", { cwd: join(FIXTURES, "go-project") });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Project Type: Go");
+    expect(result.stdout).toContain("Manifest: go.mod");
+    expect(result.stdout).toContain("Resolution Source: existing-lockfile");
+    expect(result.stdout).toContain("Direct Dependencies: 1");
+    expect(result.stdout).toContain("Total Dependencies: 2");
+  });
+
+  it("detects Rust project in fixture directory", () => {
+    const result = runCLI("scan", { cwd: join(FIXTURES, "rust-project") });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Project Type: Rust");
+    expect(result.stdout).toContain("Manifest: Cargo.toml");
+    expect(result.stdout).toContain("Resolution Source: existing-lockfile");
+    expect(result.stdout).toContain("Direct Dependencies: 1");
+    expect(result.stdout).toContain("Total Dependencies: 2");
+  });
+
+  it("detects .NET project in fixture directory", () => {
+    const result = runCLI("scan", { cwd: join(FIXTURES, "dotnet-project") });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Project Type: .NET");
+    expect(result.stdout).toContain("Manifest: test.csproj");
+    expect(result.stdout).toContain("Resolution Source: existing-lockfile");
+    expect(result.stdout).toContain("Direct Dependencies: 1");
+    expect(result.stdout).toContain("Total Dependencies: 2");
+  });
+
   it("exits with code 1 for unknown project", () => {
     const result = runCLI("scan", { cwd: join(FIXTURES, "unknown-project") });
     expect(result.exitCode).toBe(1);

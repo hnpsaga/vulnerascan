@@ -35,6 +35,13 @@ src/
 ├── resolution/         # Dependency resolution & graph generation
 ├── osv/                # OSV integration, mapping, cache & raw API client
 ├── vulnerability/      # Vulnerability matching & finding construction
+│   ├── matcher/        # Ecosystem-specific matchers
+│   │   ├── matcher.ts  # Base matcher interface
+│   │   └── node-semver.ts # Node.js / SemVer version matcher implementation
+│   ├── detector.ts     # Core vulnerability detection engine
+│   ├── findings.ts     # Vulnerability finding construction
+│   ├── matcher.ts      # Lightweight Matcher Coordinator
+│   └── vulnerability-models.ts # Shared models
 ├── reporting/          # Markdown, JSON, Console reporting engine
 ├── workspace/          # Workspace & execution run filesystem managers
 └── utils/              # Shared utility functions
@@ -64,7 +71,9 @@ The VulneraScan execution pipeline is coordinated by the `ScanPipeline` class:
 
 ### 5. Vulnerability Detection & Findings
 
-- Evaluates the vulnerability data against the resolved dependency graph version constraints. Constructs normalized, canonical findings (`VulnerabilityFinding`) mapping advisories back to specific nodes in the graph.
+- Evaluates the vulnerability data against the resolved dependency graph version constraints.
+- Employs a lightweight Matcher Coordinator (`vulnerability/matcher.ts`) that determines the appropriate ecosystem-specific matcher (e.g., `NodeSemverMatcher`) to delegate version comparison logic.
+- Constructs normalized, canonical findings (`VulnerabilityFinding`) mapping advisories back to specific nodes in the graph.
 
 ### 6. Reporting
 

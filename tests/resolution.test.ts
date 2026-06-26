@@ -652,5 +652,47 @@ describe("Dependency Resolution Engine", () => {
       expect(result.stdout).toContain("Resolution Source: generated-lockfile");
       expect(result.stdout).toContain("Direct Dependencies: 2");
     });
+
+    it("successfully runs scan on Python requirements.txt project", () => {
+      const srcDir = join(FIXTURES_DIR, "python-project");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Python");
+      expect(result.stdout).toContain("Resolution Source: generated-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 1");
+    });
+
+    it("successfully runs scan on Python pyproject.toml project", () => {
+      const srcDir = join(FIXTURES_DIR, "python-pyproject");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Python");
+      expect(result.stdout).toContain("Resolution Source: generated-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 0");
+    });
+
+    it("successfully runs scan on Python Poetry project", () => {
+      const srcDir = join(FIXTURES_DIR, "python-poetry");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Python");
+      expect(result.stdout).toContain("Resolution Source: existing-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 2");
+      expect(result.stdout).toContain("Total Dependencies: 6");
+    });
+
+    it("successfully runs scan on Python Pipenv project", () => {
+      const srcDir = join(FIXTURES_DIR, "python-pipenv");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Python");
+      expect(result.stdout).toContain("Resolution Source: existing-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 2");
+      expect(result.stdout).toContain("Total Dependencies: 2");
+    });
   });
 });

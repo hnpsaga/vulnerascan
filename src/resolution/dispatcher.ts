@@ -3,15 +3,18 @@ import { Run } from "../workspace/models/run.js";
 import { DependencyResolution } from "./models/dependency-resolution.js";
 import { NodeResolver } from "./node/resolver.js";
 import { JavaResolver } from "./java/resolver.js";
+import { PythonResolver } from "./python/resolver.js";
 import { ProjectType } from "../models/project-type.js";
 
 export class ResolverDispatcher {
   private nodeResolver: NodeResolver;
   private javaResolver: JavaResolver;
+  private pythonResolver: PythonResolver;
 
   constructor() {
     this.nodeResolver = new NodeResolver();
     this.javaResolver = new JavaResolver();
+    this.pythonResolver = new PythonResolver();
   }
 
   async resolve(workspace: Workspace, run: Run, baseDir: string): Promise<DependencyResolution> {
@@ -23,6 +26,8 @@ export class ResolverDispatcher {
       case ProjectType.Maven:
       case ProjectType.Gradle:
         return this.javaResolver.resolve(workspace, run, baseDir);
+      case ProjectType.Python:
+        return this.pythonResolver.resolve(workspace, run, baseDir);
       default:
         throw new Error(`Unsupported project type for dependency resolution: ${projectType}`);
     }

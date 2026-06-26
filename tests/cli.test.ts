@@ -110,9 +110,8 @@ describe("scan command", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Project Type: Python");
     expect(result.stdout).toContain("Manifest: requirements.txt");
-    expect(result.stdout).toContain(
-      "Dependency resolution and vulnerability scanning are not yet supported for Python projects.",
-    );
+    expect(result.stdout).toContain("Resolution Source: generated-lockfile");
+    expect(result.stdout).toContain("Direct Dependencies: 1");
   });
 
   it("detects Python pyproject in fixture directory", () => {
@@ -120,9 +119,8 @@ describe("scan command", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Project Type: Python");
     expect(result.stdout).toContain("Manifest: pyproject.toml");
-    expect(result.stdout).toContain(
-      "Dependency resolution and vulnerability scanning are not yet supported for Python projects.",
-    );
+    expect(result.stdout).toContain("Resolution Source: generated-lockfile");
+    expect(result.stdout).toContain("Direct Dependencies: 0");
   });
 
   it("exits with code 1 for unknown project", () => {

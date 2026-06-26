@@ -6,7 +6,7 @@ import type { ProjectDetector } from "../project-discovery.js";
 
 export class PythonDetector implements ProjectDetector {
   async detect(directory: string): Promise<ProjectInfo | null> {
-    const manifests = ["requirements.txt", "pyproject.toml"];
+    const manifests = ["poetry.lock", "Pipfile.lock", "requirements.txt", "pyproject.toml"];
     for (const manifest of manifests) {
       const manifestPath = join(directory, manifest);
       try {

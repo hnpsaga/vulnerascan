@@ -81,6 +81,20 @@ describe("PythonDetector", () => {
     expect(result!.manifest).toBe("pyproject.toml");
   });
 
+  it("detects Python project with poetry.lock", async () => {
+    const result = await detector.detect(join(FIXTURES, "python-poetry"));
+    expect(result).not.toBeNull();
+    expect(result!.type).toBe(ProjectType.Python);
+    expect(result!.manifest).toBe("poetry.lock");
+  });
+
+  it("detects Python project with Pipfile.lock", async () => {
+    const result = await detector.detect(join(FIXTURES, "python-pipenv"));
+    expect(result).not.toBeNull();
+    expect(result!.type).toBe(ProjectType.Python);
+    expect(result!.manifest).toBe("Pipfile.lock");
+  });
+
   it("returns null for project without Python files", async () => {
     const result = await detector.detect(join(FIXTURES, "unknown-project"));
     expect(result).toBeNull();
@@ -126,6 +140,20 @@ describe("ProjectDiscoveryService", () => {
     expect(result).not.toBeNull();
     expect(result!.type).toBe(ProjectType.Python);
     expect(result!.manifest).toBe("pyproject.toml");
+  });
+
+  it("discovers Python Poetry project", async () => {
+    const result = await service.discover(join(FIXTURES, "python-poetry"));
+    expect(result).not.toBeNull();
+    expect(result!.type).toBe(ProjectType.Python);
+    expect(result!.manifest).toBe("poetry.lock");
+  });
+
+  it("discovers Python Pipenv project", async () => {
+    const result = await service.discover(join(FIXTURES, "python-pipenv"));
+    expect(result).not.toBeNull();
+    expect(result!.type).toBe(ProjectType.Python);
+    expect(result!.manifest).toBe("Pipfile.lock");
   });
 
   it("returns null for unknown project", async () => {

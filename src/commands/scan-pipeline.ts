@@ -46,8 +46,12 @@ export class ScanPipeline {
     const runDisplay = run.name ? run.name : new Date(run.timestamp).toISOString();
     onLog(`Run: ${runDisplay}`);
 
-    // Run dependency resolution (currently Node.js only)
-    if (project.type === ProjectType.Node) {
+    // Run dependency resolution
+    if (
+      project.type === ProjectType.Node ||
+      project.type === ProjectType.Maven ||
+      project.type === ProjectType.Gradle
+    ) {
       const resolutionService = new DependencyResolutionService();
       const resolution = await resolutionService.resolve(workspace, run);
 

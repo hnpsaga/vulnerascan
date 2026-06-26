@@ -622,5 +622,35 @@ describe("Dependency Resolution Engine", () => {
       expect(result.exitCode).toBe(1);
       expect(result.stdout + result.stderr).toContain("Dependency resolution failed.");
     });
+
+    it("successfully runs scan on Maven project", () => {
+      const srcDir = join(FIXTURES_DIR, "maven-project");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Maven");
+      expect(result.stdout).toContain("Resolution Source: generated-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 2");
+    });
+
+    it("successfully runs scan on Gradle project", () => {
+      const srcDir = join(FIXTURES_DIR, "gradle-project");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Gradle");
+      expect(result.stdout).toContain("Resolution Source: generated-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 2");
+    });
+
+    it("successfully runs scan on Gradle Kotlin project", () => {
+      const srcDir = join(FIXTURES_DIR, "gradle-kts-project");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Gradle");
+      expect(result.stdout).toContain("Resolution Source: generated-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 2");
+    });
   });
 });

@@ -1,9 +1,9 @@
 import { Workspace } from "../../workspace/models/workspace.js";
 import { Run } from "../../workspace/models/run.js";
 import { DependencyResolution } from "../models/dependency-resolution.js";
-import { NpmManifestManager } from "./npm-manifest-manager.js";
-import { NpmLockfileGenerator } from "./npm-lockfile-generator.js";
-import { NpmResolutionParser } from "./npm-resolution-parser.js";
+import { NodeManifestManager } from "./npm-manifest-manager.js";
+import { NodeLockfileGenerator } from "./npm-lockfile-generator.js";
+import { NodeResolutionParser } from "./npm-resolution-parser.js";
 import { RESOLUTION_SCHEMA_VERSION } from "../../workspace/constants.js";
 import path from "path";
 import fs from "fs";
@@ -20,9 +20,9 @@ export class NodeResolver {
 
     const resolutionJsonPath = path.join(runDir, "dependency-resolution.json");
 
-    const manifestManager = new NpmManifestManager();
-    const lockfileGenerator = new NpmLockfileGenerator();
-    const resolutionParser = new NpmResolutionParser();
+    const manifestManager = new NodeManifestManager();
+    const lockfileGenerator = new NodeLockfileGenerator();
+    const resolutionParser = new NodeResolutionParser();
 
     try {
       // 1. Copy manifests into workspace manifests/ directory
@@ -58,16 +58,30 @@ export class NodeResolver {
 
       const manifestPath = path.join(workspace.sourcePath, "package.json");
       let sourceLockName = "";
+      let lockfileGenName = "package-lock.json";
+      if (summary.graph && summary.graph.packageManager) {
+        if (summary.graph.packageManager === "pnpm") lockfileGenName = "pnpm-lock.yaml";
+        else if (summary.graph.packageManager === "yarn") lockfileGenName = "yarn.lock";
+      }
+
       if (hasLock) {
-        if (fs.existsSync(path.join(workspaceDir, "manifests", "package-lock.json"))) {
-          sourceLockName = "package-lock.json";
-        } else if (fs.existsSync(path.join(workspaceDir, "manifests", "npm-shrinkwrap.json"))) {
-          sourceLockName = "npm-shrinkwrap.json";
+        const checkLocks = [
+          "pnpm-lock.yaml",
+          "yarn.lock",
+          "package-lock.json",
+          "npm-shrinkwrap.json",
+        ];
+        for (const lock of checkLocks) {
+          if (fs.existsSync(path.join(workspaceDir, "manifests", lock))) {
+            sourceLockName = lock;
+            break;
+          }
         }
       }
+
       const lockfilePath = hasLock
         ? path.join(workspace.sourcePath, sourceLockName)
-        : path.join(workspaceDir, "generated", "package-lock.json");
+        : path.join(workspaceDir, "generated", lockfileGenName);
 
       const manifestHash = crypto
         .createHash("sha256")
@@ -80,7 +94,7 @@ export class NodeResolver {
           fs.readFileSync(
             hasLock
               ? path.join(workspaceDir, "manifests", sourceLockName)
-              : path.join(workspaceDir, "generated", "package-lock.json"),
+              : path.join(workspaceDir, "generated", lockfileGenName),
           ),
         )
         .digest("hex");
@@ -95,7 +109,7 @@ export class NodeResolver {
         manifestHash,
         lockfileHash,
         projectType: workspace.projectType,
-        packageManager: "npm",
+        packageManager: summary.graph?.packageManager || "npm",
         resolutionSource,
         directDependencies: summary.directDependencies,
         totalDependencies: summary.totalDependencies,

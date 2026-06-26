@@ -582,6 +582,28 @@ describe("Dependency Resolution Engine", () => {
       expect(result.stdout).toContain("Total Dependencies: 3");
     });
 
+    it("successfully runs scan with pnpm-lock.yaml", () => {
+      const srcDir = join(FIXTURES_DIR, "pnpm-project");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Node.js");
+      expect(result.stdout).toContain("Resolution Source: existing-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 2");
+      expect(result.stdout).toContain("Total Dependencies: 3");
+    });
+
+    it("successfully runs scan with yarn.lock", () => {
+      const srcDir = join(FIXTURES_DIR, "yarn-project");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Node.js");
+      expect(result.stdout).toContain("Resolution Source: existing-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 2");
+      expect(result.stdout).toContain("Total Dependencies: 3");
+    });
+
     it("successfully runs scan without lockfile and generates one", () => {
       const srcDir = join(FIXTURES_DIR, "node-without-lockfile");
       const result = runCLI("scan", srcDir, TEST_DIR);

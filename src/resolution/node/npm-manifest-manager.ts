@@ -2,7 +2,8 @@ import { ManifestManager } from "../interfaces.js";
 import path from "path";
 import fs from "fs";
 
-export class NpmManifestManager implements ManifestManager {
+// --- Node Ecosystem Manifest Manager ---
+export class NodeManifestManager implements ManifestManager {
   async copyManifests(sourcePath: string, workspacePath: string): Promise<void> {
     const manifestsDir = path.join(workspacePath, "manifests");
     if (!fs.existsSync(manifestsDir)) {
@@ -17,34 +18,37 @@ export class NpmManifestManager implements ManifestManager {
     // Always copy package.json
     await fs.promises.copyFile(sourcePackageJson, path.join(manifestsDir, "package.json"));
 
-    // If package-lock.json exists, copy it
-    const sourcePackageLock = path.join(sourcePath, "package-lock.json");
-    if (fs.existsSync(sourcePackageLock)) {
-      await fs.promises.copyFile(sourcePackageLock, path.join(manifestsDir, "package-lock.json"));
+    // Copy any pnpm-workspace.yaml if exists
+    const sourcePnpmWorkspace = path.join(sourcePath, "pnpm-workspace.yaml");
+    if (fs.existsSync(sourcePnpmWorkspace)) {
+      await fs.promises.copyFile(
+        sourcePnpmWorkspace,
+        path.join(manifestsDir, "pnpm-workspace.yaml"),
+      );
     }
 
-    // If npm-shrinkwrap.json exists, copy it
-    const sourceShrinkwrap = path.join(sourcePath, "npm-shrinkwrap.json");
-    if (fs.existsSync(sourceShrinkwrap)) {
-      await fs.promises.copyFile(sourceShrinkwrap, path.join(manifestsDir, "npm-shrinkwrap.json"));
+    // Copy lockfiles if they exist
+    const lockfiles = ["package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock"];
+    for (const lockfile of lockfiles) {
+      const src = path.join(sourcePath, lockfile);
+      if (fs.existsSync(src)) {
+        await fs.promises.copyFile(src, path.join(manifestsDir, lockfile));
+      }
     }
   }
 
   async hasLockfile(workspacePath: string): Promise<boolean> {
     const manifestsDir = path.join(workspacePath, "manifests");
-    const packageLockPath = path.join(manifestsDir, "package-lock.json");
-    const shrinkwrapPath = path.join(manifestsDir, "npm-shrinkwrap.json");
-
-    try {
-      await fs.promises.access(packageLockPath);
-      return true;
-    } catch {
+    const lockfiles = ["package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock"];
+    for (const file of lockfiles) {
       try {
-        await fs.promises.access(shrinkwrapPath);
+        await fs.promises.access(path.join(manifestsDir, file));
         return true;
       } catch {
-        return false;
+        // continue
       }
     }
+    return false;
   }
 }
+export { NodeManifestManager as NpmManifestManager };

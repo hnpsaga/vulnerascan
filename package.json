@@ -59,6 +59,7 @@
   "dependencies": {
     "@yarnpkg/lockfile": "^1.1.0",
     "commander": "^14.0.0",
+    "smol-toml": "^1.7.0",
     "yaml": "^2.9.0"
   },
   "devDependencies": {

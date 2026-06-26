@@ -50,7 +50,8 @@ export class ScanPipeline {
     if (
       project.type === ProjectType.Node ||
       project.type === ProjectType.Maven ||
-      project.type === ProjectType.Gradle
+      project.type === ProjectType.Gradle ||
+      project.type === ProjectType.Python
     ) {
       const resolutionService = new DependencyResolutionService();
       const resolution = await resolutionService.resolve(workspace, run);

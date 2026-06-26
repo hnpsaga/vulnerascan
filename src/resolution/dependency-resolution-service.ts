@@ -1,18 +1,13 @@
 import { Workspace } from "../workspace/models/workspace.js";
 import { Run } from "../workspace/models/run.js";
 import { DependencyResolution } from "./models/dependency-resolution.js";
-import { NpmManifestManager } from "./npm/npm-manifest-manager.js";
-import { NpmLockfileGenerator } from "./npm/npm-lockfile-generator.js";
-import { NpmResolutionParser } from "./npm/npm-resolution-parser.js";
-import { ProjectType } from "../models/project-type.js";
-import { RESOLUTION_SCHEMA_VERSION } from "../workspace/constants.js";
+import { ResolverDispatcher } from "./dispatcher.js";
 import path from "path";
-import fs from "fs";
-import crypto from "crypto";
 import { homedir } from "os";
 
 export class DependencyResolutionService {
   private baseDir: string;
+  private dispatcher: ResolverDispatcher;
 
   constructor(baseDir?: string) {
     if (baseDir) {
@@ -21,136 +16,10 @@ export class DependencyResolutionService {
       const home = process.env.VULNERASCAN_HOME || homedir();
       this.baseDir = path.join(home, ".vulnerascan", "workspaces");
     }
+    this.dispatcher = new ResolverDispatcher();
   }
 
   async resolve(workspace: Workspace, run: Run): Promise<DependencyResolution> {
-    const workspaceDir = path.join(this.baseDir, workspace.id);
-    const runDir = path.join(workspaceDir, "runs", run.id);
-
-    if (!fs.existsSync(runDir)) {
-      throw new Error(`Run directory does not exist: ${runDir}`);
-    }
-
-    const resolutionJsonPath = path.join(runDir, "dependency-resolution.json");
-
-    // Only Node.js is supported at the moment
-    if (
-      workspace.projectType !== (ProjectType.Node as string) &&
-      workspace.projectType !== "node"
-    ) {
-      throw new Error(
-        `Unsupported project type for dependency resolution: ${workspace.projectType}`,
-      );
-    }
-
-    const manifestManager = new NpmManifestManager();
-    const lockfileGenerator = new NpmLockfileGenerator();
-    const resolutionParser = new NpmResolutionParser();
-
-    try {
-      // 1. Copy manifests into workspace manifests/ directory
-      await manifestManager.copyManifests(workspace.sourcePath, workspaceDir);
-
-      // 2. Determine lockfile resolution strategy
-      const hasLock = await manifestManager.hasLockfile(workspaceDir);
-      let resolutionSource: "existing-lockfile" | "generated-lockfile";
-
-      if (hasLock) {
-        resolutionSource = "existing-lockfile";
-      } else {
-        resolutionSource = "generated-lockfile";
-        try {
-          await lockfileGenerator.generateLockfile(workspaceDir);
-        } catch {
-          const failureArtifact: DependencyResolution = {
-            schemaVersion: RESOLUTION_SCHEMA_VERSION,
-            status: "failed",
-            reason: "lockfile-generation-failed",
-          };
-          await fs.promises.writeFile(
-            resolutionJsonPath,
-            JSON.stringify(failureArtifact, null, 2),
-            "utf8",
-          );
-          return failureArtifact;
-        }
-      }
-
-      // 3. Parse lockfile
-      const summary = await resolutionParser.parse(workspaceDir, resolutionSource);
-
-      const manifestPath = path.join(workspace.sourcePath, "package.json");
-      let sourceLockName = "";
-      if (hasLock) {
-        if (fs.existsSync(path.join(workspaceDir, "manifests", "package-lock.json"))) {
-          sourceLockName = "package-lock.json";
-        } else if (fs.existsSync(path.join(workspaceDir, "manifests", "npm-shrinkwrap.json"))) {
-          sourceLockName = "npm-shrinkwrap.json";
-        }
-      }
-      const lockfilePath = hasLock
-        ? path.join(workspace.sourcePath, sourceLockName)
-        : path.join(workspaceDir, "generated", "package-lock.json");
-
-      const manifestHash = crypto
-        .createHash("sha256")
-        .update(fs.readFileSync(path.join(workspaceDir, "manifests", "package.json")))
-        .digest("hex");
-
-      const lockfileHash = crypto
-        .createHash("sha256")
-        .update(
-          fs.readFileSync(
-            hasLock
-              ? path.join(workspaceDir, "manifests", sourceLockName)
-              : path.join(workspaceDir, "generated", "package-lock.json"),
-          ),
-        )
-        .digest("hex");
-
-      const successArtifact: DependencyResolution = {
-        schemaVersion: RESOLUTION_SCHEMA_VERSION,
-        workspaceId: workspace.id,
-        projectId: workspace.id,
-        scanId: run.id,
-        manifestPath,
-        lockfilePath,
-        manifestHash,
-        lockfileHash,
-        projectType: workspace.projectType,
-        packageManager: "npm",
-        resolutionSource,
-        directDependencies: summary.directDependencies,
-        totalDependencies: summary.totalDependencies,
-      };
-
-      await fs.promises.writeFile(
-        resolutionJsonPath,
-        JSON.stringify(successArtifact, null, 2),
-        "utf8",
-      );
-
-      if (summary.graph) {
-        const graphJsonPath = path.join(runDir, "dependency-graph.json");
-        await fs.promises.writeFile(graphJsonPath, JSON.stringify(summary.graph, null, 2), "utf8");
-      }
-
-      return {
-        ...successArtifact,
-        graph: summary.graph,
-      };
-    } catch (error) {
-      const failureArtifact: DependencyResolution = {
-        schemaVersion: RESOLUTION_SCHEMA_VERSION,
-        status: "failed",
-        reason: (error as Error).message || "unknown-resolution-failure",
-      };
-      await fs.promises.writeFile(
-        resolutionJsonPath,
-        JSON.stringify(failureArtifact, null, 2),
-        "utf8",
-      );
-      return failureArtifact;
-    }
+    return this.dispatcher.resolve(workspace, run, this.baseDir);
   }
 }

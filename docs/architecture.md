@@ -33,7 +33,15 @@ src/
 │   └── version.ts      # version command printer
 ├── discovery/          # Project manifestation and type discovery
 ├── resolution/         # Dependency resolution & graph generation
-├── osv/                # OSV integration, mapping, cache & raw API client
+│   ├── dispatcher.ts   # Resolver Dispatcher routing to ecosystem resolvers
+│   ├── interfaces.ts   # Core interfaces for manifest managers, generators, and parsers
+│   ├── dependency-resolution-service.ts # Main service orchestrating resolution
+│   ├── models/         # Normalized dependency models (DependencyGraph, DependencyResolution)
+│   └── node/           # Node.js ecosystem resolver implementation
+│       ├── resolver.ts # Node resolver delegating to generator, parser, and manifest manager
+│       ├── npm-lockfile-generator.ts
+│       ├── npm-manifest-manager.ts
+│       └── npm-resolution-parser.ts
 ├── vulnerability/      # Vulnerability matching & finding construction
 │   ├── matcher/        # Ecosystem-specific matchers
 │   │   ├── matcher.ts  # Base matcher interface
@@ -85,6 +93,10 @@ The VulneraScan execution pipeline is coordinated by the `ScanPipeline` class:
 
 To prepare the codebase for multi-language support, modules are strictly isolated:
 
-1. **OSV Integration**: The `osv` module is fully isolated. Provider-specific raw HTTP/API shapes are kept private, and it returns only normalized canonical domain models (`VulnerabilityRecord`).
-2. **Vulnerability Detection**: The `vulnerability` module performs version comparison and finding generation against the dependency graph.
-3. **Reporting**: The `reporting` module depends only on normalized findings and produces structured output. It contains no vulnerability detection or dependency resolution logic.
+1. **Dependency Resolution**:
+   - **Resolver Dispatcher**: A lightweight orchestrator (`src/resolution/dispatcher.ts`) that determines the workspace ecosystem and delegates dependency resolution to the appropriate ecosystem-specific resolver. It contains no dependency resolution logic itself.
+   - **Ecosystem Resolvers**: Independent modules grouped by ecosystem (e.g., `src/resolution/node/`) that implement discovery, lockfile generation, package parsing, and normalization for their respective language ecosystems.
+   - **Normalized Dependency Model Contract**: Every ecosystem resolver must produce a consistent, schema-compliant `DependencyResolution` metadata object and a `DependencyGraph` structure to keep downstream processing entirely decoupled from ecosystem-specific details.
+2. **OSV Integration**: The `osv` module is fully isolated. Provider-specific raw HTTP/API shapes are kept private, and it returns only normalized canonical domain models (`VulnerabilityRecord`).
+3. **Vulnerability Detection**: The `vulnerability` module performs version comparison and finding generation against the dependency graph.
+4. **Reporting**: The `reporting` module depends only on normalized findings and produces structured output. It contains no vulnerability detection or dependency resolution logic.

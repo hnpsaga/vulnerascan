@@ -3,3 +3,7 @@ export * from "./cache/filesystem-cache.js";
 export * from "./config/config.js";
 export { OsvClient } from "../osv/index.js";
 export type { OsvScanResult } from "../osv/index.js";
+export type {
+  PackageCoordinate,
+  VulnerabilityRecord,
+} from "../vulnerability/vulnerability-models.js";

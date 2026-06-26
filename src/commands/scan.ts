@@ -10,7 +10,7 @@ import path from "path";
 import fs from "fs";
 import { loadConfig } from "../provider/config/config.js";
 import { FilesystemVulnerabilityCache } from "../provider/cache/filesystem-cache.js";
-import { OsvClient } from "../provider/osv/osv-client.js";
+import { OsvClient } from "../osv/index.js";
 
 interface ScanOptions {
   name?: string;

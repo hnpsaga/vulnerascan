@@ -1,0 +1,34 @@
+lockfileVersion: "9.0"
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+  .:
+    dependencies:
+      foo:
+        specifier: ^1.0.0
+        version: 1.0.0
+    devDependencies:
+      bar:
+        specifier: ^2.0.0
+        version: 2.0.0
+
+packages:
+  bar@2.0.0:
+    resolution: { integrity: sha512-bar-integrity }
+  foo@1.0.0:
+    resolution: { integrity: sha512-foo-integrity }
+    dependencies:
+      baz: 3.0.0
+
+  baz@3.0.0:
+    resolution: { integrity: sha512-baz-integrity }
+
+snapshots:
+  bar@2.0.0: {}
+  foo@1.0.0:
+    dependencies:
+      baz: 3.0.0
+  baz@3.0.0: {}

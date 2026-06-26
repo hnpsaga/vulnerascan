@@ -83,9 +83,8 @@ describe("scan command", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Project Type: Maven");
     expect(result.stdout).toContain("Manifest: pom.xml");
-    expect(result.stdout).toContain(
-      "Dependency resolution and vulnerability scanning are not yet supported for Maven projects.",
-    );
+    expect(result.stdout).toContain("Resolution Source: generated-lockfile");
+    expect(result.stdout).toContain("Direct Dependencies: 2");
   });
 
   it("detects Gradle project in fixture directory", () => {
@@ -93,9 +92,8 @@ describe("scan command", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Project Type: Gradle");
     expect(result.stdout).toContain("Manifest: build.gradle");
-    expect(result.stdout).toContain(
-      "Dependency resolution and vulnerability scanning are not yet supported for Gradle projects.",
-    );
+    expect(result.stdout).toContain("Resolution Source: generated-lockfile");
+    expect(result.stdout).toContain("Direct Dependencies: 2");
   });
 
   it("detects Gradle Kotlin project in fixture directory", () => {
@@ -103,9 +101,8 @@ describe("scan command", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Project Type: Gradle");
     expect(result.stdout).toContain("Manifest: build.gradle.kts");
-    expect(result.stdout).toContain(
-      "Dependency resolution and vulnerability scanning are not yet supported for Gradle projects.",
-    );
+    expect(result.stdout).toContain("Resolution Source: generated-lockfile");
+    expect(result.stdout).toContain("Direct Dependencies: 2");
   });
 
   it("detects Python project in fixture directory", () => {

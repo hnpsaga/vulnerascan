@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { execSync } from "child_process";
-import { existsSync, mkdirSync } from "fs";
+import { existsSync, mkdirSync, rmSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 
@@ -132,6 +132,45 @@ describe("scan command", () => {
     const result = runCLI("scan", { cwd: join(FIXTURES, "unknown-project") });
     expect(result.exitCode).toBe(1);
     expect(result.stdout || result.stderr).toContain("No supported project type detected.");
+  });
+
+  describe("--path option", () => {
+    it("scans project using absolute path via --path", () => {
+      const target = join(FIXTURES, "node-project");
+      const result = runCLI(`scan --path ${target}`);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Node.js");
+      expect(result.stdout).toContain("Manifest: package.json");
+    });
+
+    it("scans project using relative path via -p", () => {
+      const result = runCLI(`scan -p ./tests/fixtures/node-project`);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Node.js");
+    });
+
+    it("exits with code 1 for invalid path", () => {
+      const result = runCLI(`scan --path ./non-existent-directory-xyz`);
+      expect(result.exitCode).toBe(1);
+      expect(result.stdout || result.stderr).toContain("Error: Scanned path does not exist");
+    });
+  });
+
+  describe("--output option", () => {
+    it("writes reports to custom output directory", () => {
+      const outDir = join(PROJECT_ROOT, "tests", "temp-reports");
+      const target = join(FIXTURES, "node-project");
+
+      const result = runCLI(`scan --path ${target} --output ${outDir}`);
+      expect(result.exitCode).toBe(0);
+
+      expect(existsSync(join(outDir, "vulnerabilities.json"))).toBe(true);
+      expect(existsSync(join(outDir, "vulnerabilities.md"))).toBe(true);
+      expect(existsSync(join(outDir, "vulnerabilities.csv"))).toBe(true);
+
+      // Cleanup
+      rmSync(outDir, { recursive: true, force: true });
+    });
   });
 });
 

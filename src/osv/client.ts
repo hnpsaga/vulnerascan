@@ -1,100 +1,23 @@
-import {
-  PackageCoordinate,
-  VulnerabilityRecord,
-} from "../../vulnerability/vulnerability-models.js";
-import { VulnerabilityCache } from "../interfaces/vulnerability-cache.js";
+import { PackageCoordinate, VulnerabilityRecord } from "../vulnerability/vulnerability-models.js";
+import { VulnerabilityCache } from "../provider/interfaces/vulnerability-cache.js";
+import { OsvBatchQueryResponse, OsvVulnerability } from "./models.js";
+import { mapToOsvEcosystem, mapOsvVulnerability, mergeVulnerabilityRecords } from "./mapper.js";
+import { OsvApiError } from "./errors.js";
 
-interface OsvVulnerability {
-  id: string;
-  modified: string;
-  published?: string;
-  aliases?: string[];
-  summary?: string;
-  details?: string;
-  references?: Array<{
-    type: string;
-    url: string;
-  }>;
-  severity?: Array<{
-    type: string;
-    score: string;
-  }>;
-}
-
-export function mapToOsvEcosystem(ecosystem: string): string {
-  const normalized = ecosystem.toLowerCase();
-  switch (normalized) {
-    case "npm":
-      return "npm";
-    case "maven":
-    case "gradle":
-      return "Maven";
-    case "python":
-    case "pypi":
-      return "PyPI";
-    case "go":
-      return "Go";
-    case "rust":
-    case "cargo":
-    case "crates.io":
-      return "crates.io";
-    case "nuget":
-    case ".net":
-      return "NuGet";
-    case "php":
-    case "packagist":
-      return "Packagist";
-    case "ruby":
-    case "rubygems":
-      return "RubyGems";
-    default:
-      return ecosystem;
-  }
-}
-
-export function normalizeVulnerability(
-  osv: OsvVulnerability,
-  affectedPkg: PackageCoordinate,
-): VulnerabilityRecord {
-  return {
-    id: osv.id,
-    aliases: osv.aliases || [],
-    summary: osv.summary || "",
-    details: osv.details || "",
-    references: (osv.references || []).map((ref) => ({
-      source: ref.type || "WEB",
-      identifier: ref.url,
-      url: ref.url,
-    })),
-    affectedPackages: [affectedPkg],
-    severity: osv.severity,
+export interface OsvScanResult {
+  provider: string;
+  vulnerabilities: VulnerabilityRecord[];
+  metadata?: {
+    timestamp: string;
+    totalPackages: number;
+    cacheHits: number;
+    networkQueries: number;
   };
 }
 
-export function mergeVulnerabilityRecords(records: VulnerabilityRecord[]): VulnerabilityRecord[] {
-  const merged = new Map<string, VulnerabilityRecord>();
-  for (const record of records) {
-    const existing = merged.get(record.id);
-    if (existing) {
-      const seen = new Set(
-        existing.affectedPackages.map((p) => `${p.ecosystem}:${p.packageName}@${p.version}`),
-      );
-      for (const pkg of record.affectedPackages) {
-        const key = `${pkg.ecosystem}:${pkg.packageName}@${pkg.version}`;
-        if (!seen.has(key)) {
-          existing.affectedPackages.push(pkg);
-          seen.add(key);
-        }
-      }
-    } else {
-      merged.set(record.id, {
-        ...record,
-        affectedPackages: [...record.affectedPackages],
-      });
-    }
-  }
-  return Array.from(merged.values());
-}
+// ---------------------------------------------------------------------------
+// HTTP helpers (private to this module)
+// ---------------------------------------------------------------------------
 
 async function fetchWithTimeout(
   url: string,
@@ -164,16 +87,9 @@ async function limitConcurrency<T, R>(
   return results;
 }
 
-export interface OsvScanResult {
-  provider: string;
-  vulnerabilities: VulnerabilityRecord[];
-  metadata?: {
-    timestamp: string;
-    totalPackages: number;
-    cacheHits: number;
-    networkQueries: number;
-  };
-}
+// ---------------------------------------------------------------------------
+// OsvClient
+// ---------------------------------------------------------------------------
 
 export class OsvClient {
   readonly name = "osv";
@@ -189,16 +105,6 @@ export class OsvClient {
 
   private getCoordinateKey(coordinate: PackageCoordinate): string {
     return `${coordinate.ecosystem}:${coordinate.packageName}@${coordinate.version}`;
-  }
-
-  private parseCoordinateKey(key: string): PackageCoordinate {
-    const colonIndex = key.indexOf(":");
-    const atIndex = key.lastIndexOf("@");
-    return {
-      ecosystem: key.slice(0, colonIndex),
-      packageName: key.slice(colonIndex + 1, atIndex),
-      version: key.slice(atIndex + 1),
-    };
   }
 
   async queryPackages(packages: PackageCoordinate[]): Promise<OsvScanResult> {
@@ -274,14 +180,10 @@ export class OsvClient {
         });
 
         if (!response.ok) {
-          throw new Error(
-            `OSV API querybatch failed with status ${response.status}: ${response.statusText}`,
-          );
+          throw new OsvApiError(response.status, response.statusText, "querybatch");
         }
 
-        const body = (await response.json()) as {
-          results?: Array<{ vulns?: Array<{ id: string }> }>;
-        };
+        const body = (await response.json()) as OsvBatchQueryResponse;
         const results = body.results || [];
 
         for (let i = 0; i < chunk.length; i++) {
@@ -327,7 +229,7 @@ export class OsvClient {
         for (const id of vulnIds) {
           const osvData = hydratedVulns.get(id);
           if (osvData) {
-            pkgVulns.push(normalizeVulnerability(osvData, pkg));
+            pkgVulns.push(mapOsvVulnerability(osvData, pkg));
           } else {
             pkgVulns.push({
               id,

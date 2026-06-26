@@ -1,4 +1,8 @@
-import { PackageCoordinate, VulnerabilityRecord } from "../vulnerability/vulnerability-models.js";
+import {
+  PackageCoordinate,
+  RichVulnerabilityRecord,
+} from "../vulnerability/vulnerability-models.js";
+
 import { VulnerabilityCache } from "../provider/interfaces/vulnerability-cache.js";
 import { OsvBatchQueryResponse, OsvVulnerability } from "./models.js";
 import { mapToOsvEcosystem, mapOsvVulnerability, mergeVulnerabilityRecords } from "./mapper.js";
@@ -6,7 +10,7 @@ import { OsvApiError } from "./errors.js";
 
 export interface OsvScanResult {
   provider: string;
-  vulnerabilities: VulnerabilityRecord[];
+  vulnerabilities: RichVulnerabilityRecord[];
   metadata?: {
     timestamp: string;
     totalPackages: number;
@@ -134,7 +138,7 @@ export class OsvClient {
       };
     }
 
-    const vulnerabilitiesMap = new Map<string, VulnerabilityRecord[]>();
+    const vulnerabilitiesMap = new Map<string, RichVulnerabilityRecord[]>();
     const uncachedPackages: PackageCoordinate[] = [];
     let cacheHitsCount = 0;
 
@@ -224,7 +228,7 @@ export class OsvClient {
       for (const pkg of uncachedPackages) {
         const pkgKey = this.getCoordinateKey(pkg);
         const vulnIds = packageToVulnIds.get(pkgKey) || [];
-        const pkgVulns: VulnerabilityRecord[] = [];
+        const pkgVulns: RichVulnerabilityRecord[] = [];
 
         for (const id of vulnIds) {
           const osvData = hydratedVulns.get(id);
@@ -249,7 +253,7 @@ export class OsvClient {
       }
     }
 
-    const allRecords: VulnerabilityRecord[] = [];
+    const allRecords: RichVulnerabilityRecord[] = [];
     for (const vulns of vulnerabilitiesMap.values()) {
       allRecords.push(...vulns);
     }

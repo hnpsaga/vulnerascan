@@ -11,6 +11,7 @@ import fs from "fs";
 import { loadConfig } from "../provider/config/config.js";
 import { FilesystemVulnerabilityCache } from "../provider/cache/filesystem-cache.js";
 import { OsvClient } from "../osv/index.js";
+import { VulnerabilityDetector } from "../vulnerability/detector.js";
 
 interface ScanOptions {
   name?: string;
@@ -109,6 +110,29 @@ export const scanCommand = new Command("scan")
           );
 
           console.log(`Vulnerabilities found: ${response.vulnerabilities.length}`);
+
+          // Orchestrate vulnerability detection pipeline
+          console.log("Running vulnerability detection...");
+          const detector = new VulnerabilityDetector({ osvClient });
+          const detectionResult = await detector.detect(resolution.graph);
+
+          // Write vulnerabilities.json to run directory
+          const runVulnerabilitiesPath = path.join(runDir, "vulnerabilities.json");
+          await fs.promises.writeFile(
+            runVulnerabilitiesPath,
+            JSON.stringify(detectionResult, null, 2),
+            "utf8",
+          );
+
+          // Write vulnerabilities.json to user's project working directory
+          const projectVulnerabilitiesPath = path.join(directory, "vulnerabilities.json");
+          await fs.promises.writeFile(
+            projectVulnerabilitiesPath,
+            JSON.stringify(detectionResult, null, 2),
+            "utf8",
+          );
+
+          console.log(`Findings generated: ${detectionResult.findings.length}`);
         }
       } else {
         console.log();

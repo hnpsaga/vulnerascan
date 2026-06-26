@@ -41,6 +41,23 @@ export interface OsvSeverity {
   score: string;
 }
 
+export interface OsvAffectedRangeEvent {
+  introduced?: string;
+  fixed?: string;
+  last_affected?: string;
+}
+
+export interface OsvAffectedRange {
+  type: string;
+  events: OsvAffectedRangeEvent[];
+}
+
+export interface OsvAffectedPackage {
+  package?: OsvPackageQuery;
+  versions?: string[];
+  ranges?: OsvAffectedRange[];
+}
+
 export interface OsvVulnerability {
   id: string;
   modified: string;
@@ -50,4 +67,5 @@ export interface OsvVulnerability {
   details?: string;
   references?: OsvReference[];
   severity?: OsvSeverity[];
+  affected?: OsvAffectedPackage[];
 }

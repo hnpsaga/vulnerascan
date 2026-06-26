@@ -27,4 +27,4 @@ export type {
 } from "./resolution/models/dependency-graph.js";
 
 export * from "./provider/index.js";
-export * from "./vulnerability/vulnerability-models.js";
+export * from "./vulnerability/index.js";

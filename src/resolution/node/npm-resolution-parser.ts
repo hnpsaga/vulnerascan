@@ -4,7 +4,6 @@ import { DependencyGraph, DependencyNode, DependencyEdge } from "../models/depen
 import path from "path";
 import fs from "fs";
 import { parse as parseYaml } from "yaml";
-// @ts-expect-error - No types available for @yarnpkg/lockfile
 import yarnLockfile from "@yarnpkg/lockfile";
 
 interface PackageJson {
@@ -442,7 +441,7 @@ export class NodeResolutionParser implements ResolutionParser {
 
       if (dep.dependencies) {
         this.flattenV1Dependencies(
-          dep.dependencies as Record<string, LockfilePackageEntry>,
+          dep.dependencies as unknown as Record<string, LockfilePackageEntry>,
           currentPath,
           packagesMap,
           packagesLock,

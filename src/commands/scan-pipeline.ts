@@ -1,0 +1,138 @@
+import { ProjectType, getProjectTypeDisplayName } from "../models/project-type.js";
+import { ProjectDiscoveryService } from "../discovery/project-discovery.js";
+import { WorkspaceManager } from "../workspace/workspace-manager.js";
+import { RunManager } from "../workspace/run-manager.js";
+import { DependencyResolutionService } from "../resolution/dependency-resolution-service.js";
+import { loadConfig } from "../provider/config/config.js";
+import { FilesystemVulnerabilityCache } from "../provider/cache/filesystem-cache.js";
+import { OsvClient } from "../osv/index.js";
+import { VulnerabilityDetector } from "../vulnerability/detector.js";
+import { homedir } from "os";
+import path from "path";
+import fs from "fs";
+
+export interface ScanPipelineOptions {
+  directory: string;
+  runName?: string;
+  onLog?: (message: string) => void;
+}
+
+export class ScanPipeline {
+  async execute(options: ScanPipelineOptions): Promise<number> {
+    const { directory, runName, onLog = console.log } = options;
+
+    const discovery = new ProjectDiscoveryService();
+    const project = await discovery.discover(directory);
+
+    if (!project) {
+      console.error("No supported project type detected.");
+      return 1;
+    }
+
+    onLog(`Project Type: ${project.type}`);
+    onLog(`Manifest: ${project.manifest}`);
+
+    // Resolve / create workspace
+    const workspaceManager = new WorkspaceManager();
+    const workspace = await workspaceManager.findOrCreateWorkspace(directory, project.type);
+
+    // Create new scan run
+    const runManager = new RunManager();
+    const run = await runManager.createRun(workspace.id, project, { name: runName });
+
+    onLog("");
+    onLog(`Workspace: ${workspace.name}`);
+    const runDisplay = run.name ? run.name : new Date(run.timestamp).toISOString();
+    onLog(`Run: ${runDisplay}`);
+
+    // Run dependency resolution (currently Node.js only)
+    if (project.type === ProjectType.Node) {
+      const resolutionService = new DependencyResolutionService();
+      const resolution = await resolutionService.resolve(workspace, run);
+
+      if (resolution.status === "failed") {
+        console.error("Dependency resolution failed.");
+        return 1;
+      }
+
+      // Output resolution details
+      onLog("");
+      onLog(`Resolution Source: ${resolution.resolutionSource}`);
+      onLog("");
+      onLog(`Direct Dependencies: ${resolution.directDependencies}`);
+      onLog(`Total Dependencies: ${resolution.totalDependencies}`);
+
+      // Run Provider Layer
+      if (resolution.graph) {
+        const home = process.env.VULNERASCAN_HOME || homedir();
+        const workspacesBaseDir = path.join(home, ".vulnerascan", "workspaces");
+        const runDir = path.join(workspacesBaseDir, workspace.id, "runs", run.id);
+
+        const config = loadConfig();
+
+        let cache: FilesystemVulnerabilityCache | undefined = undefined;
+        if (config.cache.enabled) {
+          const globalCacheDir = path.join(home, ".vulnerascan", "cache", "osv");
+          cache = new FilesystemVulnerabilityCache(globalCacheDir, config.cache.ttlHours);
+        }
+
+        const osvClient = new OsvClient({ cache });
+
+        const coordinates = (resolution.graph.nodes || [])
+          .filter((node) => node.parents.length > 0)
+          .map((node) => ({
+            ecosystem: node.ecosystem,
+            packageName: node.name,
+            version: node.version,
+          }));
+
+        onLog("");
+        onLog("Querying OSV for vulnerabilities...");
+        const response = await osvClient.queryPackages(coordinates);
+
+        onLog(`Vulnerabilities found: ${response.vulnerabilities.length}`);
+
+        // Orchestrate vulnerability detection pipeline
+        onLog("Running vulnerability detection...");
+
+        const detector = new VulnerabilityDetector({ osvClient });
+        const detectionResult = await detector.detect(resolution.graph);
+
+        // Write vulnerabilities.json to run directory
+        const runVulnerabilitiesPath = path.join(runDir, "vulnerabilities.json");
+        await fs.promises.writeFile(
+          runVulnerabilitiesPath,
+          JSON.stringify(detectionResult, null, 2),
+          "utf8",
+        );
+
+        // Write vulnerabilities.json to user's project working directory
+        const projectVulnerabilitiesPath = path.join(directory, "vulnerabilities.json");
+        await fs.promises.writeFile(
+          projectVulnerabilitiesPath,
+          JSON.stringify(detectionResult, null, 2),
+          "utf8",
+        );
+
+        onLog(`Findings generated: ${detectionResult.findings.length}`);
+
+        // Reporting Engine execution
+        const { Reporter } = await import("../reporting/index.js");
+        const reporter = new Reporter({
+          projectDirectory: directory,
+          runDirectory: runDir,
+        });
+        return await reporter.report(detectionResult);
+      }
+    } else {
+      onLog("");
+      onLog(
+        `Dependency resolution and vulnerability scanning are not yet supported for ${getProjectTypeDisplayName(project.type)} projects.`,
+      );
+      onLog("Currently, only Node.js/npm projects are supported for full dependency analysis.");
+      return 0;
+    }
+
+    return 0;
+  }
+}

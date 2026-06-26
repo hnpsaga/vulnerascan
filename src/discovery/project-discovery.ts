@@ -3,6 +3,9 @@ import { NodeDetector } from "./detectors/node-detector.js";
 import { MavenDetector } from "./detectors/maven-detector.js";
 import { GradleDetector } from "./detectors/gradle-detector.js";
 import { PythonDetector } from "./detectors/python-detector.js";
+import { GoDetector } from "./detectors/go-detector.js";
+import { RustDetector } from "./detectors/rust-detector.js";
+import { DotnetDetector } from "./detectors/dotnet-detector.js";
 
 export interface ProjectDetector {
   detect(directory: string): Promise<ProjectInfo | null>;
@@ -20,11 +23,15 @@ export class ProjectDiscoveryService {
     // 3. Gradle — build.gradle / build.gradle.kts are distinct markers.
     // 4. Python — requirements.txt / pyproject.toml checked last to avoid
     //    clashing with more specific ecosystem markers.
+    // 5. Go / Rust / .NET
     this.detectors = [
       new NodeDetector(),
       new MavenDetector(),
       new GradleDetector(),
       new PythonDetector(),
+      new GoDetector(),
+      new RustDetector(),
+      new DotnetDetector(),
     ];
   }
 

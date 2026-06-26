@@ -51,7 +51,10 @@ export class ScanPipeline {
       project.type === ProjectType.Node ||
       project.type === ProjectType.Maven ||
       project.type === ProjectType.Gradle ||
-      project.type === ProjectType.Python
+      project.type === ProjectType.Python ||
+      project.type === ProjectType.Go ||
+      project.type === ProjectType.Rust ||
+      project.type === ProjectType.Dotnet
     ) {
       const resolutionService = new DependencyResolutionService();
       const resolution = await resolutionService.resolve(workspace, run);

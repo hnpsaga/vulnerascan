@@ -694,5 +694,38 @@ describe("Dependency Resolution Engine", () => {
       expect(result.stdout).toContain("Direct Dependencies: 2");
       expect(result.stdout).toContain("Total Dependencies: 2");
     });
+
+    it("successfully runs scan on Go project", () => {
+      const srcDir = join(FIXTURES_DIR, "go-project");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Go");
+      expect(result.stdout).toContain("Resolution Source: existing-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 1");
+      expect(result.stdout).toContain("Total Dependencies: 2");
+    });
+
+    it("successfully runs scan on Rust project", () => {
+      const srcDir = join(FIXTURES_DIR, "rust-project");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: Rust");
+      expect(result.stdout).toContain("Resolution Source: existing-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 1");
+      expect(result.stdout).toContain("Total Dependencies: 2");
+    });
+
+    it("successfully runs scan on .NET project", () => {
+      const srcDir = join(FIXTURES_DIR, "dotnet-project");
+      const result = runCLI("scan", srcDir, TEST_DIR);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Project Type: .NET");
+      expect(result.stdout).toContain("Resolution Source: existing-lockfile");
+      expect(result.stdout).toContain("Direct Dependencies: 1");
+      expect(result.stdout).toContain("Total Dependencies: 2");
+    });
   });
 });

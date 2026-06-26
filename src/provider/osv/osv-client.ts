@@ -1,4 +1,7 @@
-import { PackageCoordinate, VulnerabilityRecord } from "../models/vulnerability-models.js";
+import {
+  PackageCoordinate,
+  VulnerabilityRecord,
+} from "../../vulnerability/vulnerability-models.js";
 import { VulnerabilityCache } from "../interfaces/vulnerability-cache.js";
 
 interface OsvVulnerability {

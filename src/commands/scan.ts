@@ -95,24 +95,11 @@ export const scanCommand = new Command("scan")
           console.log("Querying OSV for vulnerabilities...");
           const response = await osvClient.queryPackages(coordinates);
 
-          const providerResultsPath = path.join(runDir, "provider-results.json");
-          const artifact = {
-            schemaVersion: 1,
-            provider: response.provider,
-            vulnerabilities: response.vulnerabilities,
-            metadata: response.metadata,
-          };
-
-          await fs.promises.writeFile(
-            providerResultsPath,
-            JSON.stringify(artifact, null, 2),
-            "utf8",
-          );
-
           console.log(`Vulnerabilities found: ${response.vulnerabilities.length}`);
 
           // Orchestrate vulnerability detection pipeline
           console.log("Running vulnerability detection...");
+
           const detector = new VulnerabilityDetector({ osvClient });
           const detectionResult = await detector.detect(resolution.graph);
 

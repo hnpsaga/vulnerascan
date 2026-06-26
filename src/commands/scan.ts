@@ -120,6 +120,15 @@ export const scanCommand = new Command("scan")
           );
 
           console.log(`Findings generated: ${detectionResult.findings.length}`);
+
+          // Reporting Engine execution
+          const { Reporter } = await import("../reporting/index.js");
+          const reporter = new Reporter({
+            projectDirectory: directory,
+            runDirectory: runDir,
+          });
+          const exitCode = await reporter.report(detectionResult);
+          process.exitCode = exitCode;
         }
       } else {
         console.log();
@@ -131,9 +140,10 @@ export const scanCommand = new Command("scan")
         console.log(
           "Currently, only Node.js/npm projects are supported for full dependency analysis.",
         );
+        process.exitCode = 0;
       }
     } catch (error) {
       console.error("Scan failed:", error);
-      process.exitCode = 1;
+      process.exitCode = 2; // Operational failure (exit code > 1)
     }
   });

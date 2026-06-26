@@ -3,3 +3,9 @@ dist
 coverage
 *.lock
 package-lock.json
+vulnerabilities.json
+vulnerabilities.md
+vulnerabilities.csv
+tests/fixtures/**/vulnerabilities.json
+tests/fixtures/**/vulnerabilities.md
+tests/fixtures/**/vulnerabilities.csv

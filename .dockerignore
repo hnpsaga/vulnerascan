@@ -1,0 +1,9 @@
+node_modules
+dashboard/node_modules
+dist
+dashboard/dist
+.git
+.github
+*.log
+.gemini
+.agents

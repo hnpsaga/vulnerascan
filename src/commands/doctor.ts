@@ -4,7 +4,8 @@ import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import process from "process";
 
-const CONFIG_DIR = join(homedir(), ".vulnerascan");
+const home = process.env.VULNERASCAN_HOME || homedir();
+const CONFIG_DIR = join(home, ".vulnerascan");
 
 interface CheckResult {
   label: string;

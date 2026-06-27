@@ -26,7 +26,7 @@ export interface DashboardFilter {
 
 export class DashboardService {
   private apiService: WorkspaceApiService;
-  private workspacesBaseDir: string;
+  public workspacesBaseDir: string;
 
   constructor(baseDir?: string) {
     this.apiService = new WorkspaceApiService(baseDir);

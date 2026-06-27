@@ -1,5 +1,7 @@
 import { Command } from "commander";
 import { DashboardService } from "../workspace/dashboard-service.js";
+import fs from "fs";
+
 
 interface DashboardSummaryOptions {
   ecosystem?: string;
@@ -124,17 +126,27 @@ dashboardCommand
       await server.start();
       console.log(`VulneraScan Dashboard listening at http://${opts.host}:${port}`);
 
-      // Attempt to open the browser automatically
+      // Attempt to open the browser automatically if not in a Docker environment
       try {
-        const { exec } = await import("child_process");
-        const url = `http://${opts.host}:${port}`;
-        const startCmd =
-          process.platform === "darwin"
-            ? "open"
-            : process.platform === "win32"
-              ? "start"
-              : "xdg-open";
-        exec(`${startCmd} ${url}`);
+        const isDocker =
+          fs.existsSync("/.dockerenv") ||
+          (fs.existsSync("/proc/1/cgroup") &&
+            fs.readFileSync("/proc/1/cgroup", "utf8").includes("docker"));
+
+        if (isDocker) {
+          console.log(`\nDashboard is running in a Docker container.`);
+          console.log(`Access the dashboard in your host browser at: http://localhost:${port}\n`);
+        } else {
+          const { exec } = await import("child_process");
+          const url = `http://${opts.host}:${port}`;
+          const startCmd =
+            process.platform === "darwin"
+              ? "open"
+              : process.platform === "win32"
+                ? "start"
+                : "xdg-open";
+          exec(`${startCmd} ${url}`);
+        }
       } catch {
         // Ignore errors if we cannot launch browser
       }

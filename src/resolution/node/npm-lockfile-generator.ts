@@ -42,18 +42,33 @@ export class NodeLockfileGenerator implements LockfileGenerator {
 
     try {
       if (packageManager === "pnpm") {
+        try {
+          execFileSync("pnpm", ["--version"], { stdio: "ignore" });
+        } catch {
+          throw new Error("pnpm is required to resolve this workspace, but it is not available in the environment's PATH. Please install pnpm or run 'vulnerascan doctor' to diagnose.");
+        }
         execFileSync("pnpm", ["import"], {
           cwd: generatedDir,
           stdio: "pipe",
           env: { ...process.env },
         });
       } else if (packageManager === "yarn") {
+        try {
+          execFileSync("yarn", ["--version"], { stdio: "ignore" });
+        } catch {
+          throw new Error("yarn is required to resolve this workspace, but it is not available in the environment's PATH. Please install yarn or run 'vulnerascan doctor' to diagnose.");
+        }
         execFileSync("yarn", ["install"], {
           cwd: generatedDir,
           stdio: "pipe",
           env: { ...process.env },
         });
       } else {
+        try {
+          execFileSync("npm", ["--version"], { stdio: "ignore" });
+        } catch {
+          throw new Error("npm is required to resolve this workspace, but it is not available in the environment's PATH. Please install npm or run 'vulnerascan doctor' to diagnose.");
+        }
         execFileSync("npm", ["install", "--package-lock-only"], {
           cwd: generatedDir,
           stdio: "pipe",
@@ -64,6 +79,9 @@ export class NodeLockfileGenerator implements LockfileGenerator {
         });
       }
     } catch (error) {
+      if ((error as Error).message.includes("is required to resolve this workspace")) {
+        throw error;
+      }
       // Fallback: try generating npm package-lock.json if pnpm/yarn fails
       try {
         execFileSync("npm", ["install", "--package-lock-only"], {

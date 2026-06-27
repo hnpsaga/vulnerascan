@@ -2,35 +2,41 @@
 
 Thank you for helping keep VulneraScan and its users secure.
 
-If you believe you have discovered a security vulnerability in VulneraScan, please report it responsibly. This document describes the project's current security posture and vulnerability reporting policy.
+If you believe you have discovered a security vulnerability in VulneraScan, please report it responsibly.
 
 ---
 
 # Supported Versions
 
-VulneraScan is currently under active development.
+VulneraScan is under active development.
 
-At this time, only the latest released version is considered supported for security fixes.
-
-Older releases may not receive security updates.
+Security fixes are provided for the latest released version. Older releases may not receive security updates.
 
 ---
 
 # Reporting a Vulnerability
 
-A formal private vulnerability disclosure process has not yet been established.
+Please **do not** report security vulnerabilities through public GitHub Issues.
 
-If you discover a security vulnerability, please avoid publishing exploit details publicly until the issue has been reviewed and addressed by the project maintainer.
+Instead, use **GitHub Private Vulnerability Reporting**, available from the repository's **Security** tab.
 
-The preferred reporting mechanism will be documented here once it is available.
+This allows vulnerabilities to be reported privately so they can be investigated and fixed before public disclosure.
+
+When submitting a report, include as much information as possible, such as:
+
+* A description of the vulnerability
+* Steps to reproduce the issue
+* Potential impact
+* Proof of concept (if available)
+* Suggested mitigation (optional)
+
+After receiving a report, the project maintainer will investigate the issue, develop a fix if necessary, and coordinate responsible disclosure.
 
 ---
 
 # What to Report
 
-Please report vulnerabilities that could affect the security of VulneraScan or its users.
-
-Examples include:
+Examples of security issues include:
 
 * Remote code execution
 * Command injection
@@ -40,7 +46,7 @@ Examples include:
 * Denial of service caused by malformed input
 * Dependency vulnerabilities that directly affect VulneraScan
 
-If you are unsure whether an issue is security-related, please err on the side of reporting it.
+If you are unsure whether an issue is security-related, please report it through the private reporting channel.
 
 ---
 
@@ -50,7 +56,7 @@ The following are generally not considered security vulnerabilities:
 
 * Feature requests
 * Documentation issues
-* Questions about product usage
+* General usage questions
 * Cosmetic defects
 * Issues affecting unsupported releases
 
@@ -58,23 +64,15 @@ The following are generally not considered security vulnerabilities:
 
 # Security Characteristics
 
-VulneraScan is designed with several security-focused architectural principles.
+VulneraScan is designed with several security-focused principles.
 
 ## Local Scanning
 
-Projects are analyzed locally.
-
-Source code, manifests, generated reports, and workspace data remain on the user's machine.
-
----
+Projects are analyzed locally. Source code, manifests, generated reports, and workspace data remain on the user's machine.
 
 ## Privacy First
 
-Only dependency coordinates required to identify package versions are transmitted when querying the Open Source Vulnerability (OSV) database.
-
-Project source code and repository contents are never uploaded.
-
----
+Only the dependency coordinates required to identify packages and versions are transmitted when querying the Open Source Vulnerability (OSV) database. Project source code and repository contents are never uploaded.
 
 ## Standards-Based Outputs
 
@@ -86,13 +84,9 @@ VulneraScan generates standard security artifacts including:
 
 These formats integrate with existing security and compliance tooling.
 
----
-
 ## Configurable OSV Endpoint
 
 Organizations can configure VulneraScan to use an alternative OSV-compatible API endpoint through the `VULNERASCAN_OSV_API_URL` environment variable.
-
-This enables integration with private mirrors or internally managed OSV-compatible services.
 
 ---
 
@@ -105,16 +99,3 @@ To improve your software supply chain security:
 * Review reported vulnerabilities promptly.
 * Regenerate SBOMs after dependency updates.
 * Keep VulneraScan updated to the latest release.
-
----
-
-# Future Updates
-
-This policy will evolve as the project matures.
-
-Future revisions are expected to document:
-
-* Private vulnerability reporting
-* Supported release policy
-* Security advisory publication process
-* Response and disclosure timelines

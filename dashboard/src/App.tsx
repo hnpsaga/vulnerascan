@@ -309,7 +309,7 @@ export default function App() {
               >
                 <ArrowLeft size={16} /> Back to Projects
               </button>
-              <div style={{ display: "flex", gap: "0.5rem" }}>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                 {selectedRun && (
                   <>
                     <a
@@ -332,6 +332,41 @@ export default function App() {
                       className="btn"
                     >
                       <Download size={16} /> CSV Report
+                    </a>
+                    <a
+                      href={`${API_BASE}/projects/${selectedProject.workspaceId}/runs/${selectedRun.runId}/report/sarif`}
+                      download
+                      className="btn"
+                    >
+                      <Download size={16} /> SARIF
+                    </a>
+                    <a
+                      href={`${API_BASE}/projects/${selectedProject.workspaceId}/runs/${selectedRun.runId}/report/cyclonedx`}
+                      download
+                      className="btn"
+                    >
+                      <Download size={16} /> CycloneDX BOM
+                    </a>
+                    <a
+                      href={`${API_BASE}/projects/${selectedProject.workspaceId}/runs/${selectedRun.runId}/report/spdx`}
+                      download
+                      className="btn"
+                    >
+                      <Download size={16} /> SPDX BOM
+                    </a>
+                    <a
+                      href={`${API_BASE}/projects/${selectedProject.workspaceId}/runs/${selectedRun.runId}/report/llm-json`}
+                      download
+                      className="btn"
+                    >
+                      <Download size={16} /> LLM Context (JSON)
+                    </a>
+                    <a
+                      href={`${API_BASE}/projects/${selectedProject.workspaceId}/runs/${selectedRun.runId}/report/llm-markdown`}
+                      download
+                      className="btn"
+                    >
+                      <Download size={16} /> LLM Context (MD)
                     </a>
                   </>
                 )}

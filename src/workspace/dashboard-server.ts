@@ -84,7 +84,7 @@ export class DashboardServer {
 
             // GET /api/projects/:id/runs/:runId/report/:format
             const reportRegex =
-              /^\/api\/projects\/([^/]+)\/runs\/([^/]+)\/report\/(json|markdown|csv)$/;
+              /^\/api\/projects\/([^/]+)\/runs\/([^/]+)\/report\/(json|markdown|csv|sarif|cyclonedx|spdx|llm-json|llm-markdown)$/;
             const reportMatch = pathname.match(reportRegex);
             if (reportMatch) {
               const workspaceId = reportMatch[1];
@@ -95,6 +95,11 @@ export class DashboardServer {
                 json: "vulnerabilities.json",
                 markdown: "vulnerabilities.md",
                 csv: "vulnerabilities.csv",
+                sarif: "vulnerabilities.sarif",
+                cyclonedx: "bom.json",
+                spdx: "project.spdx.json",
+                "llm-json": "llm-context.json",
+                "llm-markdown": "llm-context.md",
               };
 
               const fileName = fileMap[format];
@@ -133,6 +138,11 @@ export class DashboardServer {
                   json: "application/json",
                   markdown: "text/markdown",
                   csv: "text/csv",
+                  sarif: "application/json",
+                  cyclonedx: "application/json",
+                  spdx: "application/json",
+                  "llm-json": "application/json",
+                  "llm-markdown": "text/markdown",
                 };
                 res.writeHead(200, {
                   "Content-Type": contentTypeMap[format],
@@ -142,7 +152,7 @@ export class DashboardServer {
                 return;
               } else {
                 res.writeHead(404, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ error: "Report file not found." }));
+                res.end(JSON.stringify({ error: `Report file not found: ${fileName}` }));
                 return;
               }
             }

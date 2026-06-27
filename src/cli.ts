@@ -5,6 +5,7 @@ import { scanCommand } from "./commands/scan.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { versionCommand } from "./commands/version.js";
 import { dashboardCommand } from "./commands/dashboard.js";
+import { exportCommand } from "./commands/export.js";
 
 const program = new Command();
 
@@ -14,6 +15,7 @@ program
   .addCommand(scanCommand)
   .addCommand(doctorCommand)
   .addCommand(versionCommand)
-  .addCommand(dashboardCommand);
+  .addCommand(dashboardCommand)
+  .addCommand(exportCommand);
 
 program.parse(process.argv);

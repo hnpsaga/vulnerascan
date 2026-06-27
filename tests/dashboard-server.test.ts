@@ -22,8 +22,8 @@ describe("Dashboard HTTP Server", () => {
       fs.rmSync(tempBaseDir, { recursive: true, force: true });
     }
     process.env.VULNERASCAN_HOME = tempBaseDir;
+    const workspacesDir = path.join(tempBaseDir, ".vulnerascan", "workspaces");
     const registryService = new ProjectRegistryService(tempBaseDir);
-    const workspacesDir = path.join(tempBaseDir, "workspaces");
 
     const metadataService = new WorkspaceMetadataService(tempBaseDir);
     const runManager = new RunManager(tempBaseDir);

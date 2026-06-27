@@ -1,71 +1,143 @@
 # Installation
 
-VulneraScan is distributed as an npm package and runs locally on your machine. It scans projects without sending dependency information to external services, making it suitable for local development and CI environments.
+This guide explains how to install VulneraScan and verify that your installation is ready to use.
+
+VulneraScan can be installed as a native CLI using npm, executed directly with `npx`, or run in an isolated Docker container.
 
 ## Prerequisites
 
-Before installing VulneraScan, ensure your environment meets the following requirements:
+Choose the installation method that best matches your workflow.
 
-* Node.js v18 or later
-* npm v8 or later
-* One of the following operating systems:
+### npm / npx
 
-  * Linux
-  * macOS
-  * Windows
+Requirements:
 
-No additional tools or services are required.
+* Node.js 18 or later
+* npm 8 or later
 
-## Install Globally
+Supported platforms:
 
-Install VulneraScan globally to make the `vulnerascan` command available from any directory.
+* Linux
+* macOS
+* Windows
+
+### Docker
+
+Requirements:
+
+* Docker Engine
+
+Docker is recommended if you prefer an isolated runtime or do not want to install Node.js locally.
+
+---
+
+# Install with npm
+
+Install the latest version globally:
 
 ```bash
 npm install -g @hnpsaga/vulnerascan
 ```
 
-## Run Without Installing
-
-If you prefer not to install the CLI globally, you can execute it directly with `npx`.
-
-```bash
-npx @hnpsaga/vulnerascan --help
-```
-
-## Verify Your Installation
-
-After installation, verify that the CLI is available.
-
-Check the installed version:
+After installation, verify the installed version:
 
 ```bash
 vulnerascan version
 ```
 
-Run the built-in health check:
+Then verify your environment:
 
 ```bash
 vulnerascan doctor
 ```
 
-The doctor command validates your environment by checking:
+The `doctor` command checks that your environment is correctly configured and reports any missing tooling required for the ecosystems you intend to scan.
 
-* Node.js version
-* Supported operating system
-* CLI installation
-* Access to the local VulneraScan configuration directory
+---
 
-If all checks pass, your installation is ready to use.
+# Run with npx
 
-## Updating
+If you don't want to install VulneraScan globally, execute it directly from npm:
 
-Update an existing global installation with:
+```bash
+npx @hnpsaga/vulnerascan --help
+```
+
+You can execute any CLI command using the same pattern:
+
+```bash
+npx @hnpsaga/vulnerascan scan
+```
+
+---
+
+# Run with Docker
+
+Pull the latest image:
+
+```bash
+docker pull ghcr.io/hnpsaga/vulnerascan:latest
+```
+
+Run a scan against the current project:
+
+```bash
+docker run --rm \
+  -v $(pwd):/project \
+  -v ~/.vulnerascan:/root/.vulnerascan \
+  ghcr.io/hnpsaga/vulnerascan:latest \
+  scan
+```
+
+The mounted workspace persists scan history, reports, caches, and dashboard data across container runs.
+
+---
+
+# Launch the Dashboard
+
+Start the dashboard server:
+
+```bash
+docker run --rm \
+  -p 4000:4000 \
+  -v ~/.vulnerascan:/root/.vulnerascan \
+  ghcr.io/hnpsaga/vulnerascan:latest \
+  dashboard
+```
+
+Open your browser and navigate to:
+
+```text
+http://localhost:4000
+```
+
+Unlike native installations, Docker containers do not automatically open your browser.
+
+---
+
+# Updating
+
+## npm
+
+Update to the latest version:
 
 ```bash
 npm install -g @hnpsaga/vulnerascan@latest
 ```
 
-## Uninstalling
+## Docker
+
+Pull the latest image:
+
+```bash
+docker pull ghcr.io/hnpsaga/vulnerascan:latest
+```
+
+---
+
+# Uninstalling
+
+## npm
 
 Remove the global installation:
 
@@ -73,12 +145,32 @@ Remove the global installation:
 npm uninstall -g @hnpsaga/vulnerascan
 ```
 
-To remove local VulneraScan configuration data as well:
+To remove all local VulneraScan data:
 
 ```bash
 rm -rf ~/.vulnerascan
 ```
 
-## Next Steps
+## Docker
 
-Once VulneraScan is installed, continue with the Quick Start guide to scan your first project.
+Remove the image:
+
+```bash
+docker rmi ghcr.io/hnpsaga/vulnerascan:latest
+```
+
+If you used a persistent Docker volume or host directory for the workspace, remove it separately if it is no longer needed.
+
+---
+
+# Notes
+
+* Native installations use your locally installed ecosystem tooling to resolve project dependencies.
+* The `doctor` command reports which ecosystem tools are available and helps identify any missing dependencies before running a scan.
+* Docker bundles the runtime required to execute VulneraScan, but the mounted project remains unchanged. All workspace data is stored separately from your source code.
+
+---
+
+# Next Steps
+
+Once VulneraScan is installed and your environment is verified, continue to the Quick Start guide to perform your first scan and explore the available commands.

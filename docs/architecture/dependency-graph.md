@@ -1,187 +1,203 @@
-# Dependency Graph Engine
+# Dependency Graph
 
-The Dependency Graph Engine (introduced in v0.0.5) is a core component of VulneraScan. It constructs a resolved, ecosystem-agnostic representation of all direct and transitive dependencies in a project. This graph serves as the foundation for vulnerability correlation, scan comparison, dashboard visualizations, and AI remediation.
+The Dependency Graph is the canonical representation of a project's dependency structure within VulneraScan.
+
+Every supported ecosystem is transformed into this common model before vulnerability detection, report generation, or export processing begins. This allows the remainder of the scan pipeline to operate independently of language-specific package managers and lockfile formats.
 
 ---
 
-## Graph Schema
+# Purpose
 
-The output artifact is named `dependency-graph.json` and is saved within the scan run's directory. It is fully deterministic, meaning subsequent runs on the same project produce bit-identical files.
+Different ecosystems describe dependencies using different manifests and lockfiles.
 
-### 1. Root Structure
+For example:
 
-```json
-{
-  "schemaVersion": 1,
-  "projectType": "node",
-  "packageManager": "npm",
-  "nodes": [],
-  "edges": []
-}
+- Node.js uses `package-lock.json`
+- Rust uses `Cargo.lock`
+- Go uses `go.mod` and `go.sum`
+- Maven uses `pom.xml`
+
+Rather than requiring every subsystem to understand every ecosystem, VulneraScan converts each project into a single language-agnostic dependency graph.
+
+This graph becomes the shared data model used throughout the remainder of the scan pipeline.
+
+---
+
+# Dependency Graph Lifecycle
+
+The dependency graph is produced once during dependency resolution and then reused throughout the scan.
+
+```text
+Project
+    │
+    ▼
+Dependency Resolution
+    │
+    ▼
+Dependency Graph
+    │
+    ├────────► Vulnerability Detection
+    ├────────► Reports
+    ├────────► Exporters
+    └────────► Dashboard
 ```
 
-- **`schemaVersion`**: `number`. Schema version of the graph format (starts at `1`).
-- **`projectType`**: `string`. The project type discovered (e.g., `"node"`).
-- **`packageManager`**: `string`. The package manager used (e.g., `"npm"`).
-- **`nodes`**: `DependencyNode[]`. Sorted alphabetically by package identity.
-- **`edges`**: `DependencyEdge[]`. Sorted alphabetically by source then target.
+Because every downstream subsystem consumes the same graph, ecosystem-specific logic remains isolated within the dependency resolution layer.
 
 ---
 
-### 2. Node Model (`DependencyNode`)
+# Core Model
 
-Each node represents a unique package version resolved in the project workspace, including the root application itself.
+The dependency graph is composed of two concepts:
 
-| Field            | Type       | Description                                                                                                                                                                                                                       |
-| ---------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`             | `string`   | Stable ecosystem-scoped package identifier (e.g., `"npm:foo@1.0.0"`).                                                                                                                                                             |
-| `name`           | `string`   | Name of the package (e.g., `"foo"`).                                                                                                                                                                                              |
-| `version`        | `string`   | Resolved package version (e.g., `"1.0.0"`).                                                                                                                                                                                       |
-| `ecosystem`      | `string`   | Target package ecosystem (e.g., `"npm"`).                                                                                                                                                                                         |
-| `dependencyType` | `string`   | The dependency type category: `"production"`, `"development"`, `"optional"`, or `"peer"`.                                                                                                                                         |
-| `isDirect`       | `boolean`  | Flag indicating if this package is a direct dependency of the root project.                                                                                                                                                       |
-| `isTransitive`   | `boolean`  | Flag indicating if this package is a transitive dependency introduced by another package.                                                                                                                                         |
-| `parents`        | `string[]` | Alphabetically sorted array of parent node IDs.                                                                                                                                                                                   |
-| `children`       | `string[]` | Alphabetically sorted array of child node IDs.                                                                                                                                                                                    |
-| `depth`          | `number`   | Computed/derived metadata representing the shortest dependency distance from the project root (0 for the root project itself), calculated via Breadth-First Search (BFS). It is not an intrinsic property of the graph structure. |
-| `packageManager` | `string`   | Optional/Reference to the package manager that resolved the package (e.g., `"npm"`).                                                                                                                                              |
-| `manifest`       | `string`   | Optional/Reference to the manifest file specifying the package (e.g., `"package.json"`).                                                                                                                                          |
+| Component | Responsibility                                       |
+| --------- | ---------------------------------------------------- |
+| Nodes     | Represent the project and every resolved dependency. |
+| Edges     | Represent dependency relationships between nodes.    |
+
+Together, these components model the complete dependency tree of the scanned project.
 
 ---
 
-### 3. Edge Model (`DependencyEdge`)
+# Node Types
 
-Edges define the relationships between parent packages and child packages.
+The graph distinguishes three categories of nodes.
 
-- **`source`**: `string`. The parent package node ID.
-- **`target`**: `string`. The child package node ID.
+## Root Project
 
----
+Represents the scanned application.
 
-## Example Graph Artifact (`dependency-graph.json`)
-
-Here is an example output generated for a project with one direct dependency (`foo`), one dev dependency (`bar`), and a transitive dependency (`baz` required by `bar`):
-
-```json
-{
-  "schemaVersion": 1,
-  "projectType": "node",
-  "packageManager": "npm",
-  "nodes": [
-    {
-      "id": "npm:bar@2.0.0",
-      "name": "bar",
-      "version": "2.0.0",
-      "ecosystem": "npm",
-      "dependencyType": "development",
-      "isDirect": true,
-      "isTransitive": false,
-      "parents": ["npm:node-with-lockfile@1.0.0"],
-      "children": ["npm:baz@3.0.0"],
-      "depth": 1,
-      "packageManager": "npm",
-      "manifest": "package.json"
-    },
-    {
-      "id": "npm:baz@3.0.0",
-      "name": "baz",
-      "version": "3.0.0",
-      "ecosystem": "npm",
-      "dependencyType": "development",
-      "isDirect": false,
-      "isTransitive": true,
-      "parents": ["npm:bar@2.0.0"],
-      "children": [],
-      "depth": 2,
-      "packageManager": "npm",
-      "manifest": "package.json"
-    },
-    {
-      "id": "npm:foo@1.0.0",
-      "name": "foo",
-      "version": "1.0.0",
-      "ecosystem": "npm",
-      "dependencyType": "production",
-      "isDirect": true,
-      "isTransitive": false,
-      "parents": ["npm:node-with-lockfile@1.0.0"],
-      "children": [],
-      "depth": 1,
-      "packageManager": "npm",
-      "manifest": "package.json"
-    },
-    {
-      "id": "npm:node-with-lockfile@1.0.0",
-      "name": "node-with-lockfile",
-      "version": "1.0.0",
-      "ecosystem": "npm",
-      "dependencyType": "production",
-      "isDirect": false,
-      "isTransitive": false,
-      "parents": [],
-      "children": ["npm:bar@2.0.0", "npm:foo@1.0.0"],
-      "depth": 0,
-      "packageManager": "npm",
-      "manifest": "package.json"
-    }
-  ],
-  "edges": [
-    {
-      "source": "npm:bar@2.0.0",
-      "target": "npm:baz@3.0.0"
-    },
-    {
-      "source": "npm:node-with-lockfile@1.0.0",
-      "target": "npm:bar@2.0.0"
-    },
-    {
-      "source": "npm:node-with-lockfile@1.0.0",
-      "target": "npm:foo@1.0.0"
-    }
-  ]
-}
-```
+There is exactly one root node in every dependency graph.
 
 ---
 
-## Graph Generation Process
+## Direct Dependencies
 
-The generation process uses a queue-based traversal starting from the root manifest definitions:
+Packages declared directly by the project.
 
-1. **Manifest Flattening (Lockfile v1)**: If a legacy lockfile (v1) is detected, the recursive dependency tree is flattened into a flat map of virtual `node_modules` path keys to align with the lockfile v2/v3 structure.
-2. **Symlink Workspace Tracking**: Monorepo workspace links (`link: true`) are resolved by reading details from the target workspace directory mapping, ensuring package versions and scopes in workspaces are resolved correctly.
-3. **Queue Initialization**: The queue is initialized with the direct dependencies of the root package categorized by their dependency fields (`dependencies`, `devDependencies`, `optionalDependencies`, `peerDependencies`).
-4. **Breadth-First Traversal & Derived Metadata**:
-   - Each package path is traversed.
-   - Standard Node.js module resolution is simulated to locate the child dependency node's physical path.
-   - A Breadth-First Search (BFS) is executed to calculate the shortest path distance (`depth`) from the project root for each node.
-   - Additional helper metadata, such as `packageManager` and `manifest` references, is assigned during this traversal.
-   - Circular dependencies are tracked using a path-to-type lookup, preventing infinite loops while still recording all circular edges.
-   - Precedence-based merging (`production` > `development` > `optional` > `peer`) is applied when a package is reached via multiple paths. If a package is visited with a higher-priority type, the new type is recursively propagated to its children.
-5. **Post-Processing**: Parent/child lists are populated on all nodes, and the entire graph structure is sorted alphabetically for deterministic JSON output.
+These form the first level beneath the root project.
 
 ---
 
-## Derived Graph Metadata
+## Transitive Dependencies
 
-The dependency graph consists fundamentally of nodes (packages) and edges (dependencies). Helper properties such as `depth` are **derived/computed metadata** rather than intrinsic attributes of the graph structure.
+Packages introduced by other dependencies.
 
-### Design Philosophy
-
-- **Downstream Simplicity**: Derived metadata is computed during the graph generation phase to simplify downstream consumers (e.g., reporting, filtering, terminal visualizations, and future vulnerability correlation). By embedding these pre-computed helper values, downstream tools can read relationship contexts directly from each node without running expensive graph traversals themselves.
-- **Separation of Concerns**: Calculating graph-derived metadata is strictly the responsibility of the Dependency Graph Generation stage. Downstream stages (like vulnerability analysis or future remediation layers) consume this metadata but do not alter or own it.
-
-### Calculation and Recomputation
-
-- **BFS Computation**: The `depth` property represents the shortest dependency distance from the project root. It is calculated dynamically during graph generation using Breadth-First Search (BFS) traversal.
-- **Transient Nature**: Because `depth` is a derived property, it is not persisted as canonical source truth. If the underlying node or edge structure changes, `depth` must be recalculated to remain valid. Consumers must treat it as computed metadata that can always be reconstructed from the primary nodes and edges.
+These may appear at any depth beneath the root project.
 
 ---
 
-## Future Extensibility Considerations
+# Relationships
 
-The Dependency Graph schema is designed to support the roadmap through v0.5.x:
+Dependencies are represented as a directed graph.
 
-- **Ecosystem Portability**: The node structure requires only `ecosystem`, `name`, and `version`. Future modules for PyPI, Maven, Go, Cargo, etc., can use the exact same schema.
-- **Scan Comparison / Diffing**: Since identifiers (`id`) are stable and outputs are deterministic, scan comparison engines can easily diff two graphs by doing simple set differences on the `nodes` and `edges` lists to identify upgrades, downgrades, additions, and removals.
-- **Vulnerability Correlation & Dashboard Tracing**: The explicit presence of `parents` and `children` arrays enables the dashboard and AI engines to reconstruct path chains (e.g. `app -> react-scripts -> webpack -> chokidar`) without needing complex in-memory graph queries.
+Each relationship identifies which package depends on another.
+
+This structure enables VulneraScan to:
+
+- determine dependency paths
+- distinguish direct and transitive dependencies
+- calculate dependency statistics
+- generate standards-compliant SBOMs
+
+---
+
+# Graph Construction
+
+Each supported ecosystem is responsible for constructing the dependency graph from its native package metadata.
+
+Although implementations differ between ecosystems, they all follow the same architectural workflow:
+
+1. Copy project manifests into the workspace.
+2. Locate or generate a lockfile when required.
+3. Parse the resolved dependency information.
+4. Build the canonical dependency graph.
+5. Validate the resulting graph before returning it to the scan pipeline.
+
+Once this process completes, the remainder of the application operates exclusively on the dependency graph rather than ecosystem-specific files.
+
+---
+
+# Graph Consumers
+
+The dependency graph is shared across multiple subsystems.
+
+| Consumer                | Purpose                                                   |
+| ----------------------- | --------------------------------------------------------- |
+| Vulnerability Detection | Matches resolved packages against OSV advisories.         |
+| Report Generation       | Produces human-readable scan reports.                     |
+| Exporters               | Generates CycloneDX, SPDX, SARIF, and AI Context outputs. |
+| Dashboard               | Displays dependency statistics and scan information.      |
+
+This shared model eliminates duplicate parsing logic and ensures every subsystem operates on the same dependency information.
+
+---
+
+# Design Principles
+
+## Language-Agnostic
+
+Every supported ecosystem is represented using the same dependency graph model.
+
+This allows exporters, reporting, and vulnerability detection to remain independent of package manager implementation details.
+
+---
+
+## Immutable Scan Snapshot
+
+Each scan produces a dependency graph representing the project at a single point in time.
+
+This snapshot is preserved as part of the scan history and is reused by exporters and the dashboard without rescanning the project.
+
+---
+
+## Separation of Responsibilities
+
+The dependency graph describes only dependency structure.
+
+It intentionally does **not** contain:
+
+- vulnerability information
+- CVSS scores
+- advisory metadata
+- remediation guidance
+
+Those concerns belong to the vulnerability detection subsystem.
+
+---
+
+# Extending the Dependency Graph
+
+Adding support for a new ecosystem follows the same architectural pattern as existing implementations.
+
+Contributors should:
+
+1. Implement project manifest handling.
+2. Parse the ecosystem's dependency information.
+3. Construct the canonical dependency graph.
+4. Register the resolver with the dispatcher.
+
+As long as the resulting graph conforms to the canonical model, the remaining scan pipeline—including vulnerability detection, reporting, exporters, and the dashboard—works without ecosystem-specific changes.
+
+---
+
+# Current Limitations
+
+The current implementation has several known architectural limitations.
+
+- Dependency path resolution follows a single parent path when multiple parent relationships exist.
+- Dependency path traversal applies a maximum traversal depth to prevent infinite recursion in cyclic graphs.
+- Some ecosystems currently expose less complete dependency relationship information than others due to limitations in their native metadata.
+
+These limitations affect only graph construction and traversal. They do not change the overall architecture of the dependency graph.
+
+---
+
+# Related Documentation
+
+The dependency graph is one component of the overall VulneraScan architecture.
+
+For additional details, see:
+
+- **Architecture Overview** — Overall system architecture.
+- **OSV Integration** — How vulnerabilities are retrieved and matched against graph nodes.

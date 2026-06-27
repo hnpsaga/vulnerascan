@@ -1,82 +1,192 @@
 # VulneraScan
 
-Developer-first vulnerability scanner for modern software projects.
+> A privacy-first, multi-ecosystem dependency vulnerability scanner powered by the Open Source Vulnerability (OSV) database.
 
-[![CI](https://github.com/hnpsaga/vulnerascan/actions/workflows/ci.yml/badge.svg)](https://github.com/hnpsaga/vulnerascan/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/@hnpsaga/vulnerascan)](https://www.npmjs.com/package/@hnpsaga/vulnerascan)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+VulneraScan helps developers identify known dependency vulnerabilities early in the software development lifecycle. Every scan runs locally, producing standardized outputs for developers, CI/CD pipelines, and security tooling without requiring project source code or dependency information to be uploaded to external services.
+
+## Why VulneraScan?
+
+Modern software projects depend on hundreds or even thousands of third-party packages. Tracking vulnerabilities across those dependencies can quickly become difficult, especially when working with multiple programming languages and build systems.
+
+VulneraScan was created to provide a simple, transparent, and extensible way to identify known vulnerabilities while remaining completely local-first.
+
+### Key Principles
+
+- **Privacy First** — Project source code and dependency graphs remain on your machine.
+- **Multi-Ecosystem** — Scan projects across multiple programming language ecosystems through a unified workflow.
+- **Consistent Results** — Every supported ecosystem produces the same normalized dependency and vulnerability models.
+- **Developer Friendly** — Command-line interface, browser dashboard, machine-readable reports, and security export formats.
+- **Open Source** — Built on open standards and the OSV vulnerability database.
 
 ---
 
-## What is VulneraScan?
+## Where VulneraScan Fits
 
-VulneraScan is an open-source, developer-first vulnerability scanner designed to run entirely locally. It parses project dependency manifests, builds structured dependency graphs, queries open vulnerability feeds (such as the Google OSV database), and identifies security findings directly in the developer terminal or a local browser-based dashboard.
+VulneraScan is designed to be the **first line of dependency vulnerability detection** during software development.
+
+It helps developers identify known vulnerabilities early, understand their dependency graph, and take action before code reaches production.
+
+Typical workflows include:
+
+- Running scans locally before committing changes.
+- Integrating scans into CI/CD pipelines.
+- Reviewing dependency health through the built-in dashboard.
+- Exporting results to security tooling using formats such as SARIF and CycloneDX.
+
+VulneraScan is intentionally focused on dependency vulnerability analysis. It does **not** attempt to replace enterprise application security platforms.
+
+Organizations that require capabilities such as centralized policy management, organization-wide governance, compliance reporting, license management, or commercial security workflows can use VulneraScan alongside those platforms.
+
+By producing standardized outputs and security export formats, VulneraScan integrates naturally into larger security ecosystems while remaining lightweight, transparent, and developer-friendly.
 
 ---
 
-## Why use VulneraScan?
+## Features
 
-- **Privacy-first**: All package dependency resolution and vulnerability checks are executed locally. No source code or proprietary graphs are uploaded to third-party servers.
-- **Fast and Cached**: A built-in local cache with time-to-live settings minimizes network query delays.
-- **Ecosystem Portable**: Standardized schema models support multi-language environments (Node.js, PHP, Python, Java, Go, Rust, .NET).
-- **CI/CD Integrations**: Standard exits and formats (SARIF, CycloneDX) ease compliance validation in workflows.
+- Dependency discovery across multiple ecosystems.
+- Automatic dependency graph generation.
+- Vulnerability detection using the Open Source Vulnerability (OSV) database.
+- Local workspace with historical scan results.
+- Browser-based dashboard for exploring projects and scan history.
+- Multiple report formats:
+
+  - JSON
+  - Markdown
+  - CSV
+
+- Security exports:
+
+  - SARIF
+  - CycloneDX
+  - SPDX
+
+- AI-friendly context exports for LLM-assisted analysis.
+
+---
+
+## Supported Ecosystems
+
+VulneraScan currently supports multiple programming language ecosystems through a common scanning pipeline.
+
+For the latest compatibility matrix, supported dependency managers, and current limitations, see:
+
+**→ `docs/ecosystems/supported-ecosystems.md`**
 
 ---
 
 ## Installation
 
-For full installation options and requirements, see the [Installation Guide](file:///home/hnpsaga/projects/vulnerascan/docs/getting-started/installation.md).
-
-Install globally using npm:
+### npm
 
 ```bash
 npm install -g @hnpsaga/vulnerascan
 ```
 
+### Docker
+
+Docker installation instructions are available in:
+
+**→ `docs/getting-started/installation.md`**
+
 ---
 
 ## Quick Start
 
-For detailed step-by-step instructions, see the [Quick Start Guide](file:///home/hnpsaga/projects/vulnerascan/docs/getting-started/quick-start.md).
+Scan the current project:
 
-1. **Verify your setup**:
-   ```bash
-   vulnerascan doctor
-   ```
-2. **Scan a repository**:
-   ```bash
-   vulnerascan scan
-   ```
-3. **Launch the Local Dashboard**:
-   ```bash
-   vulnerascan dashboard
-   ```
+```bash
+vulnerascan scan
+```
 
----
+Scan another project:
 
-## Learn More
+```bash
+vulnerascan scan --path /path/to/project
+```
 
-Explore our detailed documentation sections:
+Launch the dashboard:
 
-- **[Getting Started](file:///home/hnpsaga/projects/vulnerascan/docs/getting-started/quick-start.md)**: Jump in with [Installation](file:///home/hnpsaga/projects/vulnerascan/docs/getting-started/installation.md) and [Quick Start](file:///home/hnpsaga/projects/vulnerascan/docs/getting-started/quick-start.md).
-- **[CLI Reference](file:///home/hnpsaga/projects/vulnerascan/docs/cli/README.md)**: Explore the command-line interface commands and options.
-- **[Dashboard](file:///home/hnpsaga/projects/vulnerascan/docs/dashboard/README.md)**: Learn about the interactive local web dashboard.
-- **[Workspace Schema](file:///home/hnpsaga/projects/vulnerascan/docs/workspace/README.md)**: Understand the directory structure and metadata layouts.
-- **[Reports](file:///home/hnpsaga/projects/vulnerascan/docs/reports/README.md)**: Details on run output files and formats.
-- **[Exporters](file:///home/hnpsaga/projects/vulnerascan/docs/exporters/README.md)**: Info on exporting formats like SARIF, CycloneDX, and SPDX.
-- **[Supported Ecosystems](file:///home/hnpsaga/projects/vulnerascan/docs/ecosystems/supported-ecosystems.md)**: Check supported package managers and manifest specifications.
-- **[Architecture & Design](file:///home/hnpsaga/projects/vulnerascan/docs/architecture/README.md)**: Deep dive into the pipeline architecture and [OSV Integration](file:///home/hnpsaga/projects/vulnerascan/docs/architecture/osv-integration.md).
-- **[Development](file:///home/hnpsaga/projects/vulnerascan/docs/development/README.md)**: Set up local development and view the project [Roadmap](file:///home/hnpsaga/projects/vulnerascan/docs/development/roadmap.md).
-- **[Examples](file:///home/hnpsaga/projects/vulnerascan/docs/examples/node.md)**: Access language-specific scan configurations and samples:
-  - [Node.js](file:///home/hnpsaga/projects/vulnerascan/docs/examples/node.md)
-  - [Java](file:///home/hnpsaga/projects/vulnerascan/docs/examples/java.md)
-  - [Python](file:///home/hnpsaga/projects/vulnerascan/docs/examples/python.md)
-  - [Go](file:///home/hnpsaga/projects/vulnerascan/docs/examples/go.md)
-  - [Rust](file:///home/hnpsaga/projects/vulnerascan/docs/examples/rust.md)
-  - [.NET](file:///home/hnpsaga/projects/vulnerascan/docs/examples/dotnet.md)
-  - [PHP](file:///home/hnpsaga/projects/vulnerascan/docs/examples/php.md)
+```bash
+vulnerascan dashboard
+```
+
+For installation instructions, see:
+
+**→ `docs/getting-started/installation.md`**
 
 ---
 
-- [Security Policy](file:///home/hnpsaga/projects/vulnerascan/SECURITY.md) — Instructions for submitting security vulnerabilities.
-- [License details](file:///home/hnpsaga/projects/vulnerascan/LICENSE) — MIT License info.
+## Documentation
+
+### Getting Started
+
+- Installation
+
+### User Guide
+
+- CLI Reference
+- Dashboard
+- Reports
+- Supported Ecosystems
+
+### Architecture
+
+- Architecture Overview
+- Dependency Graph
+- OSV Integration
+
+### Development
+
+- Contributing
+- Security Policy
+
+---
+
+## Documentation Index
+
+| Document                                  | Description               |
+| ----------------------------------------- | ------------------------- |
+| `docs/getting-started/installation.md`    | Installation instructions |
+| `docs/cli/README.md`                      | Complete CLI reference    |
+| `docs/dashboard/README.md`                | Dashboard usage           |
+| `docs/reports/README.md`                  | Report formats            |
+| `docs/ecosystems/supported-ecosystems.md` | Supported ecosystems      |
+| `docs/architecture/README.md`             | Architecture overview     |
+| `CONTRIBUTING.md`                         | Contributor guide         |
+| `SECURITY.md`                             | Security policy           |
+
+---
+
+## Project Philosophy
+
+VulneraScan is designed around a simple principle:
+
+> Scan locally. Normalize consistently. Present results clearly.
+
+The scanning pipeline separates project discovery, dependency resolution, vulnerability matching, reporting, dashboard presentation, and export generation into independent modules. This architecture keeps the project maintainable while making it easier to add support for new ecosystems over time.
+
+---
+
+## Contributing
+
+Contributions are welcome.
+
+If you'd like to contribute, start with:
+
+**→ `CONTRIBUTING.md`**
+
+---
+
+## Security
+
+If you discover a security vulnerability, please follow the process described in:
+
+**→ `SECURITY.md`**
+
+---
+
+## License
+
+This project is licensed under the MIT License.
+
+See the `LICENSE` file for details.

@@ -1,167 +1,227 @@
-# VulneraScan — Architecture
+# Architecture Overview
 
-## Overview
+This document provides a high-level overview of the VulneraScan architecture.
 
-VulneraScan is structured as a modular TypeScript/JavaScript CLI application. Each module has a well-defined responsibility, adheres to a strict inward-pointing dependency flow, and uses standard normalized data models to interact with other components.
+It is intended for contributors who want to understand how the system is organized before making changes to the codebase.
 
-```
+Rather than focusing on implementation details, this guide explains the responsibilities of each subsystem, how they collaborate, and how data flows through the application.
+
+---
+
+# Design Goals
+
+VulneraScan is built around a small set of architectural principles that shape every subsystem.
+
+## CLI First
+
+The command-line interface is the primary entry point into the application.
+
+All major functionality—including scanning, exporting reports, running diagnostics, and launching the dashboard—is exposed through a consistent CLI experience.
+
+## Privacy First
+
+All scanning occurs locally.
+
+Project source code, dependency information, scan history, and generated reports remain on the user's machine. Vulnerability information is retrieved from the Open Source Vulnerability (OSV) database, but project files are never uploaded.
+
+## Workspace Based
+
+Every scan is executed within an isolated workspace managed by VulneraScan.
+
+This allows scan history, generated reports, cached data, and dashboard information to be preserved without modifying the user's project.
+
+## Modular
+
+Each major responsibility is implemented as an independent subsystem with well-defined boundaries.
+
+This keeps the codebase maintainable while making it easier to add support for new ecosystems, exporters, and reporting formats.
+
+---
+
+# System Architecture
+
+The application is organized into several major subsystems.
+
+| Subsystem               | Responsibility                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| CLI                     | Parses commands and coordinates application workflows.                              |
+| Project Discovery       | Detects the project ecosystem and identifies supported manifests.                   |
+| Dependency Resolution   | Builds a dependency graph for the detected project.                                 |
+| OSV Integration         | Retrieves vulnerability information from the Open Source Vulnerability database.    |
+| Vulnerability Detection | Matches resolved dependencies against known vulnerabilities.                        |
+| Reporting               | Produces human-readable and machine-readable reports.                               |
+| Exporters               | Generates standard security formats such as SARIF, CycloneDX, SPDX, and AI Context. |
+| Workspace               | Stores scan history, reports, project metadata, and cached information.             |
+| Dashboard               | Presents workspace data through a browser-based interface.                          |
+
+Each subsystem has a single responsibility and communicates with neighboring subsystems through well-defined domain models.
+
+---
+
+# End-to-End Scan Flow
+
+A typical scan follows this sequence:
+
+```text
+CLI
+ │
+ ▼
 Project Discovery
-        ↓
+ │
+ ▼
 Dependency Resolution
-        ↓
-Dependency Graph
-        ↓
+ │
+ ▼
 OSV Integration
-        ↓
-Normalized Vulnerability Findings
-        ↓
-Reporting
+ │
+ ▼
+Vulnerability Detection
+ │
+ ├────────────► Reports & Exporters
+ │
+ ▼
+Workspace
+ │
+ ▼
+Dashboard
 ```
+
+The workflow begins when the user executes `vulnerascan scan`.
+
+The project is first analyzed to determine its ecosystem. Dependencies are then resolved into a dependency graph, which is used to query the OSV database for known vulnerabilities. The resulting findings are transformed into reports, persisted within the local workspace, and made immediately available through the dashboard.
+
+Each stage focuses on a single responsibility, making the overall pipeline easier to understand, test, and extend.
 
 ---
 
-## Directory Structure
+# Project Organization
 
-```
-src/
-├── cli.ts              # Entry point — Commander program setup
-├── index.ts            # Public API exports
-├── commands/
-│   ├── scan.ts         # scan command orchestrator (CLI entry)
-│   ├── scan-pipeline.ts # ScanPipeline coordination service
-│   ├── doctor.ts       # doctor command environment validator
-│   └── version.ts      # version command printer
-├── discovery/          # Project manifestation and type discovery
-├── resolution/         # Dependency resolution & graph generation
-│   ├── dispatcher.ts   # Resolver Dispatcher routing to ecosystem resolvers
-│   ├── interfaces.ts   # Core interfaces for manifest managers, generators, and parsers
-│   ├── dependency-resolution-service.ts # Main service orchestrating resolution
-│   ├── models/         # Normalized dependency models (DependencyGraph, DependencyResolution)
-│   ├── node/           # Node.js ecosystem resolver implementation
-│   │       ├── resolver.ts # Node resolver delegating to generator, parser, and manifest manager
-│   │       ├── npm-lockfile-generator.ts
-│   │       ├── npm-manifest-manager.ts
-│   │       └── npm-resolution-parser.ts
-│   └── php/            # PHP ecosystem resolver implementation
-│       ├── resolver.ts # PHP resolver delegating to parser and manifest manager
-│       ├── php-manifest-manager.ts
-│       └── php-resolution-parser.ts
-├── vulnerability/      # Vulnerability matching & finding construction
-│   ├── matcher/        # Ecosystem-specific matchers
-│   │   ├── matcher.ts  # Base matcher interface
-│   │   └── node-semver.ts # Node.js / SemVer version matcher implementation
-│   ├── detector.ts     # Core vulnerability detection engine
-│   ├── findings.ts     # Vulnerability finding construction
-│   ├── matcher.ts      # Lightweight Matcher Coordinator
-│   └── vulnerability-models.ts # Shared models
-├── reporting/          # Markdown, JSON, Console reporting engine
-├── workspace/          # Workspace & execution run filesystem managers
-│   ├── models/         # Workspace data structures
-│   │   ├── discovery.ts
-│   │   ├── project-registry.ts # ProjectRegistryEntry and ProjectRegistry schema
-│   │   ├── run.ts
-│   │   ├── workspace-metadata.ts # WorkspaceMetadata, RunIndex, and RunIndexEntry schema
-│   │   └── workspace.ts
-│   ├── constants.ts
-│   ├── project-registry-service.ts # Global project tracking and lookup registry
-│   ├── run-manager.ts
-│   ├── workspace-api-service.ts    # Reusable business logic APIs for CLI/Dashboard
-│   ├── workspace-manager.ts
-│   └── workspace-metadata-service.ts # Run indexing and metadata updating logic
-└── utils/              # Shared utility functions
-```
+The repository is organized around architectural responsibilities rather than programming language features.
+
+| Directory    | Purpose                              |
+| ------------ | ------------------------------------ |
+| `src/`       | Core application source code.        |
+| `dashboard/` | Browser-based dashboard application. |
+| `tests/`     | Unit and integration tests.          |
+| `docs/`      | User and developer documentation.    |
+| `dist/`      | Generated build artifacts.           |
+
+Within `src/`, related functionality is grouped into dedicated modules such as discovery, dependency resolution, vulnerability detection, reporting, exporters, and workspace management.
 
 ---
 
-## Core Scanning Pipeline
+# Data Flow
 
-The VulneraScan execution pipeline is coordinated by the `ScanPipeline` class:
+The primary data flow through VulneraScan is straightforward.
 
-### 1. Project Discovery
-
-- Locates supported project manifests (e.g., `package.json`, `pom.xml`, etc.), identifying the project's ecosystem, and registers the project within a workspace.
-
-### 2. Dependency Resolution
-
-- Resolves package dependencies, processes lockfiles, prepares dependency metadata, and persists resolution details.
-
-### 3. Dependency Graph Generation
-
-- Constructs a structural representation of resolved project dependencies (`DependencyGraph`), modeling parent/child links and package version relationships.
-
-### 4. OSV Integration
-
-- Queries the OSV API using the resolved package coordinates. Uses a filesystem cache with TTL to cache results and avoid unnecessary network requests.
-
-### 5. Vulnerability Detection & Findings
-
-- Evaluates the vulnerability data against the resolved dependency graph version constraints.
-- Employs a lightweight Matcher Coordinator (`vulnerability/matcher.ts`) that determines the appropriate ecosystem-specific matcher (e.g., `NodeSemverMatcher`) to delegate version comparison logic.
-- Constructs normalized, canonical findings (`VulnerabilityFinding`) mapping advisories back to specific nodes in the graph.
-
-### 6. Reporting
-
-- Executes the reporting engine to output scan results into user-facing formats (e.g., markdown reports, JSON summaries, console logs).
-
----
-
-## Module Isolation Rules
-
-To prepare the codebase for multi-language support, modules are strictly isolated:
-
-1. **Dependency Resolution**:
-   - **Resolver Dispatcher**: A lightweight orchestrator (`src/resolution/dispatcher.ts`) that determines the workspace ecosystem and delegates dependency resolution to the appropriate ecosystem-specific resolver. It contains no dependency resolution logic itself.
-   - **Ecosystem Resolvers**: Independent modules grouped by ecosystem (e.g., `src/resolution/node/`) that implement discovery, lockfile generation, package parsing, and normalization for their respective language ecosystems.
-   - **Normalized Dependency Model Contract**: Every ecosystem resolver must produce a consistent, schema-compliant `DependencyResolution` metadata object and a `DependencyGraph` structure to keep downstream processing entirely decoupled from ecosystem-specific details.
-2. **OSV Integration**: The `osv` module is fully isolated. Provider-specific raw HTTP/API shapes are kept private, and it returns only normalized canonical domain models (`VulnerabilityRecord`).
-3. **Vulnerability Detection**: The `vulnerability` module performs version comparison and finding generation against the dependency graph.
-4. **Reporting**: The `reporting` module depends only on normalized findings and produces structured output. It contains no vulnerability detection or dependency resolution logic.
-
----
-
-## Global Workspace & Project Registry
-
-VulneraScan organizes project scan outcomes and history in a centralized database-less storage system using simple structured filesystem directories under the `VULNERASCAN_HOME` environment variable (default: `~/.vulnerascan`).
-
-### Directory Layout
-
-```
-~/.vulnerascan/
-├── projects.json                  # Global Project Registry tracking all known projects
-└── workspaces/
-    └── <workspace_id>/            # Unique project workspace directory (derived from project path)
-        ├── workspace.json         # Raw workspace metadata
-        ├── metadata.json          # Workspace statistics, status, latest successful/failed scans
-        ├── run-index.json         # Scan timeline and run summary index
-        └── runs/
-            └── <run_timestamp>/   # Individual execution folder containing reports/artifacts
-                ├── run.json
-                ├── discovery.json
-                └── vulnerabilities.json
+```text
+Project
+    │
+    ▼
+Dependency Graph
+    │
+    ▼
+OSV Vulnerability Data
+    │
+    ▼
+Vulnerability Findings
+    │
+    ▼
+Reports & Exporters
+    │
+    ▼
+Workspace
+    │
+    ▼
+Dashboard
 ```
 
-### Key Services
+Each stage transforms data into a more useful representation without modifying the original project.
 
-- **Project Registry Service (`src/workspace/project-registry-service.ts`)**: Serves as the central repository registry to record and query tracked directories, ecosystems, and overall statuses without traversing subdirectories.
-- **Workspace Metadata Service (`src/workspace/workspace-metadata-service.ts`)**: Coordinates recording run index timelines and maintaining statistics on direct/transitive dependencies and vulnerability counts.
-- **Workspace API Service (`src/workspace/workspace-api-service.ts`)**: Clean wrapper exposes APIs for project registration, details lookup, lists, scan history, and run summaries.
+This separation allows reports, exports, and the dashboard to share a common source of truth.
 
 ---
 
-## Dashboard Backend Service
+# Workspace Model
 
-VulneraScan provides a presentation-oriented dashboard service to aggregate workspace and project scan details for consumers (like a CLI, future web UI, REST API, or exports) without requiring direct parsing of raw run directories or workspace files.
+The workspace is a central architectural component.
 
-The dashboard service behaves strictly as a presentation-aggregation layer.
+Rather than operating directly inside the user's project, VulneraScan maintains an isolated workspace where it stores:
 
-### Key Responsibilities
+- project metadata
+- scan history
+- generated reports
+- exported artifacts
+- cached vulnerability information
 
-1. **Information Aggregation**: Loads registered projects, latest scans, scan histories, and individual vulnerability records to produce unified summaries.
-2. **Normalized Presentation Models**: Maps workspace metadata and completed scan runs to normalized presentation-oriented contracts (`src/models/dashboard.ts`):
-   - **`DashboardSummary`**: System-wide status statistics, vulnerability severities, ecosystems breakdown, and project summary list.
-   - **`ProjectSummary`**: Specific project details, workspace identifiers, latest scan run details, and aggregated vulnerabilities.
-   - **`ScanSummary`**: Individual execution status, dependency counts, duration, and error/findings summary.
-   - **`VulnerabilitySummary`**: Categorized breakdown of total vulnerabilities by severity levels (`critical`, `high`, `medium`, `low`, `unknown`).
-   - **`HistoricalScanSummary`**: Normalized record of completed runs with timeline details.
-3. **Filtering & Statistics**: Evaluates filter configurations (by ecosystem, project ID, severity, or scan timeline dates) efficiently.
-4. **Service Boundaries**: Depends strictly on `ProjectRegistry`, `WorkspaceServices`, and the `RunIndex`. It does not perform dependency resolution, version matching, OSV querying, or direct scanning.
+Using a dedicated workspace provides several advantages:
+
+- Scan history is preserved across executions.
+- Reports can be regenerated without rescanning.
+- Dashboard data remains available between sessions.
+- Projects are never modified during analysis.
+
+---
+
+# Dashboard Integration
+
+The dashboard is a visualization layer built on top of the workspace.
+
+It does not perform vulnerability scanning itself.
+
+Instead, it presents information already produced by previous scans, including:
+
+- registered projects
+- scan history
+- vulnerability summaries
+- dependency statistics
+- generated reports
+
+Because the dashboard consumes existing workspace data, every successful scan becomes available immediately without any additional import or synchronization step.
+
+---
+
+# Extending VulneraScan
+
+The architecture is designed to make future enhancements straightforward.
+
+Common extension areas include:
+
+| Area              | Typical Changes                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| Ecosystem Support | Add project detection and dependency resolution for a new ecosystem. |
+| Report Formats    | Add new human-readable reports.                                      |
+| Export Formats    | Implement additional machine-readable export standards.              |
+| Dashboard         | Introduce new visualizations and analysis views.                     |
+
+The modular architecture allows these capabilities to evolve independently while preserving the overall scan pipeline.
+
+---
+
+# Architectural Boundaries
+
+The current architecture intentionally focuses on local dependency vulnerability analysis.
+
+It does not include:
+
+- cloud-hosted services
+- remote project synchronization
+- automatic dependency upgrades
+- automatic code remediation
+- user authentication or multi-user collaboration
+- external database servers
+
+Keeping the architecture local-first reduces operational complexity while preserving privacy and making VulneraScan easy to use in both developer workstations and CI/CD environments.
+
+---
+
+# Related Documentation
+
+This document provides the architectural overview.
+
+The following documents describe individual subsystems in greater detail:
+
+- **Dependency Graph** – Structure and lifecycle of the dependency graph.
+- **OSV Integration** – Communication with the Open Source Vulnerability database and caching strategy.
+
+Contributors are encouraged to begin with this overview before exploring subsystem-specific documentation.

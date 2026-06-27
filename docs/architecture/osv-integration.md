@@ -1,129 +1,239 @@
-# OSV Integration Architecture
+# OSV Integration
 
-The **OSV Integration Module** (located in `src/osv/`) handles all interactions with the Google Open Source Vulnerabilities (OSV) database. It is responsible for querying the OSV API, caching results locally to minimize network overhead, and mapping raw API responses into normalized domain models.
+VulneraScan uses the Open Source Vulnerability (OSV) database as its primary source of vulnerability information.
+
+The OSV integration subsystem is responsible for retrieving vulnerability data, normalizing advisory information, caching responses, and providing a consistent interface to the vulnerability detection pipeline.
+
+This separation allows the remainder of the application to operate independently of the underlying vulnerability provider.
 
 ---
 
-## Architectural Overview
+# Role in the Scan Pipeline
 
-Unlike previous versions that relied on a generalized provider interface registry, the current architecture uses a dedicated, highly optimized `OsvClient` to manage OSV queries.
+The OSV subsystem sits between dependency resolution and vulnerability detection.
 
-```
-┌───────────────────────────────────────┐
-│        Dependency Graph Engine        │
-│    (Provides resolved package list)   │
-└───────────────────┬───────────────────┘
-                    │
-                    ▼
-┌───────────────────────────────────────┐
-│              OsvClient                │
-├───────────────────────────────────────┤
-│ ┌───────────────────────────────────┐ │
-│ │          Local Cache Check        │ │
-│ └─────────────────┬─────────────────┘ │
-│                   ▼                   │
-│ ┌───────────────────────────────────┐ │
-│ │        Batch API Request          │ │
-│ │       (/v1/querybatch)            │ │
-│ └─────────────────┬─────────────────┘ │
-│                   ▼                   │
-│ ┌───────────────────────────────────┐ │
-│ │      Parallel Vuln Hydration       │ │
-│ │       (/v1/vulns/{id})            │ │
-│ └───────────────────────────────────┘ │
-└───────────────────┬───────────────────┘
-                    │
-                    ▼
-┌───────────────────────────────────────┐
-│         vulnerabilities.json          │
-└───────────────────────────────────────┘
+```text
+Project
+    │
+    ▼
+Dependency Resolution
+    │
+    ▼
+Dependency Graph
+    │
+    ▼
+OSV Integration
+    │
+    ▼
+Vulnerability Detection
+    │
+    ▼
+Reports, Exporters & Dashboard
 ```
 
-Downstream components consume normalized, canonical domain models, insulating the rest of the application from change in the external API schema.
+The dependency graph identifies the packages and versions used by the project.
+
+The OSV subsystem retrieves vulnerability information for those packages and transforms it into VulneraScan's internal representation before passing it to the vulnerability detector.
 
 ---
 
-## Dependency Graph: The Source of Truth
+# Responsibilities
 
-The OSV Integration module respects the dependency graph:
+The OSV integration layer has five primary responsibilities.
 
-- **No Lockfile Reparsing**: It consumes the resolved `DependencyGraph` and uses the package coordinates (ecosystem, name, version) to build requests.
-- **Run Isolation**: Every execution maintains isolated vulnerability lookup results.
+| Responsibility         | Description                                                                               |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| Coordinate Translation | Converts dependency information into OSV-compatible package coordinates.                  |
+| Request Processing     | Groups package queries into efficient batch requests.                                     |
+| Response Normalization | Converts OSV responses into VulneraScan's internal vulnerability model.                   |
+| Caching                | Stores previously retrieved vulnerability information locally to reduce network requests. |
+| Error Isolation        | Prevents network or API failures from affecting the remainder of the scan pipeline.       |
 
 ---
 
-## Domain Models
+# Data Flow
 
-The public surface of the OSV module is defined in [src/osv/index.ts](file:///home/hnpsaga/projects/vulnerascan/src/osv/index.ts):
+Every scan follows the same OSV integration workflow.
 
-- `OsvClient`: The class coordinating the queries.
-- `OsvScanResult`: The final structure containing retrieved vulnerability records and scan metadata:
-
-```typescript
-export interface OsvScanResult {
-  provider: string;
-  vulnerabilities: RichVulnerabilityRecord[];
-  metadata?: {
-    timestamp: string;
-    totalPackages: number;
-    cacheHits: number;
-    networkQueries: number;
-  };
-}
+```text
+Dependency Graph
+        │
+        ▼
+Package Coordinates
+        │
+        ▼
+Local Cache
+        │
+   ┌────┴────┐
+   │         │
+Cache Hit  Cache Miss
+   │         │
+   │     OSV Requests
+   │         │
+   └────┬────┘
+        ▼
+Response Normalization
+        ▼
+Vulnerability Records
+        ▼
+Vulnerability Detection
 ```
 
----
+Only package metadata required to identify dependencies is sent to the OSV API.
 
-## Query Lifecycle & API Integration
-
-The `OsvClient` executes scans through the following process:
-
-### 1. Ecosystem Mapping
-
-The mapper translates internal VulneraScan ecosystem strings to OSV-recognized values:
-
-- `npm` -> `npm`
-- `composer` -> `Packagist`
-- `pip`/`poetry` -> `PyPI`
-- `maven` -> `Maven`
-- `go` -> `Go`
-- `cargo` -> `Crates.io`
-- `nuget` -> `NuGet`
-
-### 2. Cache Inspection
-
-Before initiating network requests, coordinates are queried against the local `VulnerabilityCache`. Hits are resolved immediately, avoiding remote calls.
-
-### 3. Batch Querying
-
-Any cache-miss packages are batched into groups and queried via `/v1/querybatch`. This retrieves a list of matching vulnerability IDs for all packages in a single request.
-
-### 4. Concurrency-Limited Hydration
-
-To retrieve complete details for each discovered vulnerability ID:
-
-- Vulnerabilities are fetched from the `/v1/vulns/{id}` endpoint.
-- Network requests are processed concurrently using a concurrency-limiting helper (`limitConcurrency`) to respect API limits and prevent socket exhaustion.
-
-### 5. Normalization
-
-Raw OSV API models are translated into normalized `RichVulnerabilityRecord` structures via the mapper.
+Project source code, manifests, and repository contents never leave the local machine.
 
 ---
 
-## Cache Architecture
+# Request Processing
 
-To protect API limits and speed up local development:
+Package coordinates extracted from the dependency graph are translated into the format expected by the OSV API.
 
-- **Cache Location**: Files are stored in a hierarchical structure under `~/.vulnerascan/cache/osv/` (e.g. `.vulnerascan/cache/osv/npm/lodash/4.17.20.json`).
-- **TTL Support**: Cached entries contain timestamps. If the cache age exceeds the configured `ttlHours` (default: 24 hours), the cache is invalidated and a fresh network query is performed.
+To reduce network overhead, VulneraScan groups multiple package queries into batch requests before sending them to the remote service.
+
+Once advisory identifiers are returned, detailed advisory information is retrieved, normalized, and associated with the corresponding package coordinates.
+
+This process is transparent to the remainder of the scan pipeline.
 
 ---
 
-## Network Resilience
+# Response Processing
 
-To handle network fluctuations, the `OsvClient` implements:
+Responses from the OSV API are validated before being processed.
 
-- **Exponential Backoff**: Automatic retries (up to 3 times) for server-side errors (HTTP 5xx status codes).
-- **Timeouts**: An `AbortController` enforces a request timeout limit (default: 10s).
-- **Graceful Degradation**: Network errors are caught and reported as warnings, preventing transient network failures from hard-crashing the entire pipeline.
+The OSV subsystem transforms advisory data into a normalized internal representation that is independent of the external API schema.
+
+Normalization includes:
+
+- advisory metadata
+- affected packages
+- version information
+- references
+- severity information
+- publication timestamps
+
+The vulnerability detection subsystem consumes only this normalized representation and does not depend directly on the OSV API.
+
+---
+
+# Local Cache
+
+To improve performance and reduce unnecessary network traffic, VulneraScan maintains a local cache of vulnerability information.
+
+The cache provides several benefits:
+
+- Faster repeated scans.
+- Reduced API requests.
+- Improved resilience during intermittent network issues.
+
+Cache entries automatically expire after a configurable period.
+
+If an entry has expired, VulneraScan transparently retrieves fresh vulnerability information from the OSV service.
+
+Cache write failures do not interrupt scans.
+
+---
+
+# Configuration
+
+The OSV subsystem supports a small set of public configuration options.
+
+## Environment Variables
+
+| Variable                  | Purpose                                                        |
+| ------------------------- | -------------------------------------------------------------- |
+| `VULNERASCAN_HOME`        | Overrides the location of the VulneraScan workspace and cache. |
+| `VULNERASCAN_OSV_API_URL` | Uses an alternative OSV-compatible API endpoint.               |
+
+## Configuration File
+
+The local configuration file allows contributors and users to configure cache behaviour.
+
+Supported options include:
+
+- enabling or disabling the cache
+- configuring cache lifetime
+
+These settings affect only the OSV integration subsystem.
+
+---
+
+# Error Handling
+
+The OSV integration layer is designed to isolate external failures from the remainder of the application.
+
+It provides:
+
+- request timeouts
+- automatic retries for transient failures
+- graceful handling of partial failures
+- normalized error reporting
+
+When possible, scans continue even if individual advisory requests fail.
+
+This allows VulneraScan to produce useful results instead of terminating the entire scan because of a temporary network issue.
+
+---
+
+# Design Principles
+
+## Privacy First
+
+Only dependency coordinates are transmitted to the OSV API.
+
+Project source code, manifests, reports, and workspace data remain on the local machine.
+
+---
+
+## Provider Independence
+
+The remainder of the application depends on VulneraScan's normalized vulnerability model rather than the OSV API directly.
+
+This keeps reporting, exporters, and vulnerability detection isolated from provider-specific schemas.
+
+---
+
+## Performance
+
+Batch requests and local caching reduce network overhead while maintaining consistent scan behaviour.
+
+---
+
+## Resilience
+
+Network failures are contained within the OSV subsystem and do not propagate through the rest of the architecture.
+
+---
+
+# Extending the Integration
+
+Contributors modifying the OSV subsystem should preserve the separation between:
+
+- dependency resolution
+- provider communication
+- vulnerability normalization
+- vulnerability detection
+
+Keeping these responsibilities independent ensures changes to provider communication do not affect reporting, exporters, or dashboard functionality.
+
+---
+
+# Current Limitations
+
+The current implementation has several known architectural limitations.
+
+- Package coordinates are transmitted in plaintext over HTTPS, as required by the OSV API.
+- Request batching and advisory retrieval concurrency use fixed implementation limits.
+- Cached entries expire based on time and are refreshed on demand rather than being proactively cleaned up.
+- If a batch request fails, the affected batch is retried as a whole rather than being subdivided into smaller requests.
+
+These limitations are implementation characteristics rather than architectural constraints.
+
+---
+
+# Related Documentation
+
+For additional information, see:
+
+- **Architecture Overview** — Overall system architecture.
+- **Dependency Graph** — Canonical dependency model consumed by the OSV subsystem.

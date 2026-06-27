@@ -1,72 +1,101 @@
 # Security Policy
 
-## Supported Versions
+Thank you for helping keep VulneraScan and its users secure.
 
-The following versions of VulneraScan are currently receiving security updates:
-
-| Version | Supported |
-| ------- | --------- |
-| 0.0.x   | ✅ Active |
+If you believe you have discovered a security vulnerability in VulneraScan, please report it responsibly.
 
 ---
 
-## Reporting a Vulnerability
+# Supported Versions
 
-We take security seriously. If you discover a security vulnerability in VulneraScan, please follow responsible disclosure practices.
+VulneraScan is under active development.
 
-### How to Report
-
-**Do NOT open a public GitHub issue for security vulnerabilities.**
-
-Instead, report vulnerabilities privately via one of these methods:
-
-1. **GitHub Private Security Advisory** (preferred):
-   - Go to the [Security Advisories](https://github.com/hnpsaga/vulnerascan/security/advisories/new) page
-   - Click **"New draft security advisory"**
-   - Fill in the details and submit
-
-2. **Email**:
-   - Contact the maintainer directly at the email address listed on the GitHub profile
-   - Use the subject line: `[SECURITY] VulneraScan - <brief description>`
+Security fixes are provided for the latest released version. Older releases may not receive security updates.
 
 ---
 
-## What to Include
+# Reporting a Vulnerability
 
-When reporting a vulnerability, please include as much of the following as possible:
+Please **do not** report security vulnerabilities through public GitHub Issues.
 
-- **Description**: A clear description of the vulnerability and its impact
-- **Affected versions**: Which versions are affected
-- **Steps to reproduce**: A minimal reproduction of the issue
-- **Proof of concept**: Code or commands that demonstrate the issue (if applicable)
-- **Suggested fix**: If you have a proposed fix or mitigation
+Instead, use **GitHub Private Vulnerability Reporting**, available from the repository's **Security** tab.
 
----
+This allows vulnerabilities to be reported privately so they can be investigated and fixed before public disclosure.
 
-## Responsible Disclosure Process
+When submitting a report, include as much information as possible, such as:
 
-1. **Report received**: We will acknowledge your report within **48 hours**.
-2. **Initial assessment**: We will assess the severity and impact within **5 business days**.
-3. **Fix development**: We will develop and test a fix.
-4. **Coordinated disclosure**: We will notify you before publishing the fix.
-5. **Public disclosure**: A security advisory will be published after the fix is released.
+- A description of the vulnerability
+- Steps to reproduce the issue
+- Potential impact
+- Proof of concept (if available)
+- Suggested mitigation (optional)
 
-We ask that you:
-
-- Give us reasonable time to address the vulnerability before public disclosure
-- Do not exploit the vulnerability beyond what is necessary to demonstrate the issue
-- Do not disclose the vulnerability publicly until we have released a fix
+After receiving a report, the project maintainer will investigate the issue, develop a fix if necessary, and coordinate responsible disclosure.
 
 ---
 
-## Security Best Practices for Users
+# What to Report
 
-- Always use the latest version of VulneraScan
-- Regularly run `vulnerascan doctor` to verify your environment
-- Do not run VulneraScan with elevated privileges unless required
+Examples of security issues include:
+
+- Remote code execution
+- Command injection
+- Directory traversal
+- Privilege escalation
+- Arbitrary file access
+- Denial of service caused by malformed input
+- Dependency vulnerabilities that directly affect VulneraScan
+
+If you are unsure whether an issue is security-related, please report it through the private reporting channel.
 
 ---
 
-## Credits
+# What Not to Report
 
-We credit all security researchers who responsibly disclose vulnerabilities to us in our release notes (with their permission).
+The following are generally not considered security vulnerabilities:
+
+- Feature requests
+- Documentation issues
+- General usage questions
+- Cosmetic defects
+- Issues affecting unsupported releases
+
+---
+
+# Security Characteristics
+
+VulneraScan is designed with several security-focused principles.
+
+## Local Scanning
+
+Projects are analyzed locally. Source code, manifests, generated reports, and workspace data remain on the user's machine.
+
+## Privacy First
+
+Only the dependency coordinates required to identify packages and versions are transmitted when querying the Open Source Vulnerability (OSV) database. Project source code and repository contents are never uploaded.
+
+## Standards-Based Outputs
+
+VulneraScan generates standard security artifacts including:
+
+- SARIF
+- CycloneDX SBOM
+- SPDX SBOM
+
+These formats integrate with existing security and compliance tooling.
+
+## Configurable OSV Endpoint
+
+Organizations can configure VulneraScan to use an alternative OSV-compatible API endpoint through the `VULNERASCAN_OSV_API_URL` environment variable.
+
+---
+
+# Security Best Practices
+
+To improve your software supply chain security:
+
+- Keep project dependencies up to date.
+- Scan projects regularly.
+- Review reported vulnerabilities promptly.
+- Regenerate SBOMs after dependency updates.
+- Keep VulneraScan updated to the latest release.

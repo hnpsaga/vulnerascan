@@ -32,4 +32,3 @@ export const versionCommand = new Command("version")
   .action(() => {
     console.log(`VulneraScan v${getPackageVersion()}`);
   });
-

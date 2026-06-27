@@ -219,4 +219,3 @@ describe("doctor command", () => {
     expect(existsSync(configDir)).toBe(true);
   });
 });
-

@@ -2,7 +2,6 @@ import { Command } from "commander";
 import { DashboardService } from "../workspace/dashboard-service.js";
 import fs from "fs";
 
-
 interface DashboardSummaryOptions {
   ecosystem?: string;
   severity?: string;

@@ -27,7 +27,6 @@ function getPackageVersion(): string {
 
 export const VERSION = getPackageVersion();
 
-
 export { ProjectType, getProjectTypeDisplayName } from "./models/project-type.js";
 export type { ProjectInfo } from "./models/project-info.js";
 export { ProjectDiscoveryService } from "./discovery/project-discovery.js";

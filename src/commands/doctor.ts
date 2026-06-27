@@ -49,7 +49,11 @@ function checkConfigDir(): CheckResult {
   };
 }
 
-function checkEcosystemTool(label: string, cmd: string, versionArgs: string[] = ["--version"]): CheckResult {
+function checkEcosystemTool(
+  label: string,
+  cmd: string,
+  versionArgs: string[] = ["--version"],
+): CheckResult {
   try {
     const output = execSync(`${cmd} ${versionArgs.join(" ")}`, {
       stdio: "pipe",
@@ -75,7 +79,7 @@ function checkEcosystemTool(label: string, cmd: string, versionArgs: string[] = 
 }
 
 function printCheck(result: CheckResult): void {
-  const icon = result.passed ? "\u2714" : (result.optional ? "\u26A0" : "\u2716");
+  const icon = result.passed ? "\u2714" : result.optional ? "\u26A0" : "\u2716";
   const prefix = result.optional ? "[Ecosystem] " : "";
   const detail = result.detail ? ` (${result.detail})` : "";
   console.log(`${icon} ${prefix}${result.label}${detail}`);
@@ -86,11 +90,7 @@ export const doctorCommand = new Command("doctor")
   .action(() => {
     console.log("Running VulneraScan doctor checks...\n");
 
-    const coreChecks: CheckResult[] = [
-      checkNodeVersion(),
-      checkPlatform(),
-      checkConfigDir(),
-    ];
+    const coreChecks: CheckResult[] = [checkNodeVersion(), checkPlatform(), checkConfigDir()];
 
     const ecosystemTools = [
       { label: "npm package manager", cmd: "npm" },
@@ -125,10 +125,11 @@ export const doctorCommand = new Command("doctor")
 
     if (corePassed) {
       console.log("All core checks passed. VulneraScan runtime environment is healthy.");
-      console.log("Note: Missing ecosystem tools only affect project scanning for those specific platforms.");
+      console.log(
+        "Note: Missing ecosystem tools only affect project scanning for those specific platforms.",
+      );
     } else {
       console.log("Core environment checks failed. Please resolve the errors above.");
       process.exit(1);
     }
   });
-

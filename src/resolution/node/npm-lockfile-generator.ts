@@ -45,7 +45,9 @@ export class NodeLockfileGenerator implements LockfileGenerator {
         try {
           execFileSync("pnpm", ["--version"], { stdio: "ignore" });
         } catch {
-          throw new Error("pnpm is required to resolve this workspace, but it is not available in the environment's PATH. Please install pnpm or run 'vulnerascan doctor' to diagnose.");
+          throw new Error(
+            "pnpm is required to resolve this workspace, but it is not available in the environment's PATH. Please install pnpm or run 'vulnerascan doctor' to diagnose.",
+          );
         }
         execFileSync("pnpm", ["import"], {
           cwd: generatedDir,
@@ -56,7 +58,9 @@ export class NodeLockfileGenerator implements LockfileGenerator {
         try {
           execFileSync("yarn", ["--version"], { stdio: "ignore" });
         } catch {
-          throw new Error("yarn is required to resolve this workspace, but it is not available in the environment's PATH. Please install yarn or run 'vulnerascan doctor' to diagnose.");
+          throw new Error(
+            "yarn is required to resolve this workspace, but it is not available in the environment's PATH. Please install yarn or run 'vulnerascan doctor' to diagnose.",
+          );
         }
         execFileSync("yarn", ["install"], {
           cwd: generatedDir,
@@ -67,7 +71,9 @@ export class NodeLockfileGenerator implements LockfileGenerator {
         try {
           execFileSync("npm", ["--version"], { stdio: "ignore" });
         } catch {
-          throw new Error("npm is required to resolve this workspace, but it is not available in the environment's PATH. Please install npm or run 'vulnerascan doctor' to diagnose.");
+          throw new Error(
+            "npm is required to resolve this workspace, but it is not available in the environment's PATH. Please install npm or run 'vulnerascan doctor' to diagnose.",
+          );
         }
         execFileSync("npm", ["install", "--package-lock-only"], {
           cwd: generatedDir,

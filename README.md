@@ -1,8 +1,8 @@
 # VulneraScan
 
-A privacy-first, multi-ecosystem dependency vulnerability scanner powered by the Open Source Vulnerability (OSV) database.
+> A privacy-first, multi-ecosystem dependency vulnerability scanner powered by the Open Source Vulnerability (OSV) database.
 
-VulneraScan helps developers discover known dependency vulnerabilities early in the software development lifecycle while keeping scans local and producing standardized outputs for both developers and security tooling.
+VulneraScan helps developers identify known dependency vulnerabilities early in the software development lifecycle. Every scan runs locally, producing standardized outputs for developers, CI/CD pipelines, and security tooling without requiring project source code or dependency information to be uploaded to external services.
 
 ## Why VulneraScan?
 

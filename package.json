@@ -19,7 +19,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "npm run build --prefix dashboard && tsup && cp -r dashboard/dist dist/dashboard",
     "dev": "tsx src/cli.ts",
     "lint": "eslint src tests",
     "lint:fix": "eslint src tests --fix",

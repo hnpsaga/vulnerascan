@@ -1,4 +1,2 @@
-src/
-tsconfig.json
-.gitignore
-.npmignore
+# empty npmignore so package.json files array controls packaging without gitignore interference
+

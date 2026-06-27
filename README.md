@@ -8,21 +8,30 @@ Developer-first vulnerability scanner for modern software projects.
 
 ---
 
-## Status
+## What is VulneraScan?
 
-✅ **v0.0.3 — Project Discovery**
+VulneraScan is an open-source, developer-first vulnerability scanner designed to run entirely locally. It parses project dependency manifests, builds structured dependency graphs, queries open vulnerability feeds (such as the Google OSV database), and identifies security findings directly in the developer terminal or a local browser-based dashboard.
 
-Project detection across multiple ecosystems is implemented.
+---
+
+## Why use VulneraScan?
+
+- **Privacy-first**: All package dependency resolution and vulnerability checks are executed locally. No source code or proprietary graphs are uploaded to third-party servers.
+- **Fast and Cached**: A built-in local cache with time-to-live settings minimizes network query delays.
+- **Ecosystem Portable**: Standardized schema models support multi-language environments (Node.js, PHP, Python, Java, Go, Rust, .NET).
+- **CI/CD Integrations**: Standard exits and formats (SARIF, CycloneDX) ease compliance validation in workflows.
 
 ---
 
 ## Installation
 
+Install globally using npm:
+
 ```bash
 npm install -g @hnpsaga/vulnerascan
 ```
 
-or run without installing:
+Or execute directly on demand using `npx`:
 
 ```bash
 npx @hnpsaga/vulnerascan --help
@@ -30,157 +39,33 @@ npx @hnpsaga/vulnerascan --help
 
 ---
 
-## Commands
+## Quick Start
 
-| Command               | Description                                      |
-| --------------------- | ------------------------------------------------ |
-| `vulnerascan`         | Display help information                         |
-| `vulnerascan version` | Print the current version                        |
-| `vulnerascan doctor`  | Check environment health and configuration       |
-| `vulnerascan scan`    | Detect project type and scan for vulnerabilities |
-
-### `vulnerascan version`
-
-```
-VulneraScan v0.0.3
-```
-
-### `vulnerascan doctor`
-
-Checks your environment and creates the configuration directory if missing:
-
-```
-Running VulneraScan doctor checks...
-
-✔ Node version (v20.0.0 (minimum: v18))
-✔ Platform (linux)
-✔ CLI installed (vulnerascan is reachable)
-✔ Configuration directory accessible (~/.vulnerascan)
-
-All checks passed. VulneraScan is ready.
-```
-
-### `vulnerascan scan`
-
-Detects the project type, identifies the manifest file, resolves dependencies, and scans for vulnerabilities:
-
-```bash
-$ vulnerascan scan
-Project Type: Node.js
-Manifest: package.json
-```
-
-#### Options
-
-- `-p, --path <path>`: Path to the project directory to scan (default: current working directory).
-- `-o, --output <dir>`: Directory to write generated reports into (Markdown, JSON, CSV). If omitted, reports are only kept in the workspace run history.
-- `-n, --name <name>`: Name of the scan run.
-
-#### Examples
-
-Scan a project at a specific path:
-
-```bash
-vulnerascan scan --path ~/projects/api
-```
-
-Write reports to the current directory:
-
-```bash
-vulnerascan scan --output .
-```
-
-Scan a project at a specific path and write reports to a custom reports directory:
-
-```bash
-vulnerascan scan --path ~/projects/api --output ~/reports
-```
-
-#### Supported ecosystems
-
-| Ecosystem | Manifest(s)                           |
-| --------- | ------------------------------------- |
-| Node.js   | `package.json`                        |
-| Maven     | `pom.xml`                             |
-| Gradle    | `build.gradle` / `build.gradle.kts`   |
-| Python    | `requirements.txt` / `pyproject.toml` |
-| Go        | `go.mod` / `go.sum`                   |
-| Rust      | `Cargo.toml` / `Cargo.lock`           |
-| .NET      | `*.csproj` / `packages.lock.json`     |
-| PHP       | `composer.json` / `composer.lock`     |
-
-If no supported project type is detected, the command exits with code 1:
-
-```
-$ vulnerascan scan
-No supported project type detected.
-```
+1. **Verify your setup**:
+   ```bash
+   vulnerascan doctor
+   ```
+2. **Scan a repository**:
+   ```bash
+   vulnerascan scan
+   ```
+3. **Launch the Local Dashboard**:
+   ```bash
+   vulnerascan dashboard
+   ```
 
 ---
 
-## Local Workspaces
+## Learn More
 
-VulneraScan stores scan history locally:
+For deeper documentation, browse our topics:
 
-`~/.vulnerascan/workspaces/`
-
-Each project receives a workspace.
-
-Each scan creates a run.
-
-All data remains local.
-
----
-
-## Dependency Resolution
-
-VulneraScan performs dependency resolution in an isolated local workspace.
-
-The source repository is never modified.
-
-If a lockfile is missing, VulneraScan generates one inside the workspace and uses it for analysis.
-
----
-
-## Development Status
-
-| Version | Phase             | Status      |
-| ------- | ----------------- | ----------- |
-| v0.0.1  | Foundation        | ✅ Released |
-| v0.0.2  | Foundation        | ✅ Released |
-| v0.0.3  | Project Discovery | ✅ Released |
-| v0.0.4  | Dependency Graph  | 📋 Planned  |
-| v0.1.0  | Stable CLI        | 📋 Planned  |
-| v0.2.0  | Local Dashboard   | 📋 Planned  |
-| v0.3.0  | AI Remediation    | 📋 Planned  |
-
-See the full [Roadmap](./docs/roadmap.md) for details.
-
----
-
-## Planned Features
-
-- 🔍 Dependency graph generation
-- 📊 Dependency graph generation
-- 🛡️ Vulnerability detection via OSV, NVD, and GitHub Advisories
-- 🌍 Multi-language support (Node.js, Python, Maven, Gradle)
-- 🤖 AI-assisted remediation insights (BYOK)
-- 🖥️ Local security dashboard
-
----
-
-## Contributing
-
-We welcome contributions! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on branch naming, commit conventions, and the PR process.
-
----
-
-## Security
-
-To report a security vulnerability, please follow the [responsible disclosure process](./SECURITY.md). Do not open public GitHub issues for security reports.
-
----
-
-## License
-
-MIT — see [LICENSE](./LICENSE) for details.
+- [Architecture & Design](file:///home/hnpsaga/projects/vulnerascan/docs/architecture/README.md) — Directory layouts, scan pipeline mechanics, and provider abstraction layers.
+- [CLI Reference](file:///home/hnpsaga/projects/vulnerascan/docs/cli/README.md) — Options and examples for `doctor`, `scan`, and other commands.
+- [Local Dashboard](file:///home/hnpsaga/projects/vulnerascan/docs/dashboard/README.md) — Aggregated views and dependency pathways.
+- [Workspace Schema](file:///home/hnpsaga/projects/vulnerascan/docs/workspace/README.md) — Local directory structure for workspace metadata and run timeline history.
+- [Ecosystem Support](file:///home/hnpsaga/projects/vulnerascan/docs/ecosystems/README.md) — Supported language files and manifest rules.
+- [Report Formats & Exports](file:///home/hnpsaga/projects/vulnerascan/docs/reports/README.md) — Details on generated run artifacts and format exporters (SARIF, CycloneDX, SPDX).
+- [Contributor & Developer Guide](file:///home/hnpsaga/projects/vulnerascan/docs/development/README.md) — Setup guidelines, branch conventions, and compliance test commands.
+- [Security Policy](file:///home/hnpsaga/projects/vulnerascan/SECURITY.md) — Instructions for submitting security vulnerabilities.
+- [License details](file:///home/hnpsaga/projects/vulnerascan/LICENSE) — MIT License info.

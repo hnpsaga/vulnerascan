@@ -31,7 +31,11 @@ export class DashboardService {
   constructor(baseDir?: string) {
     this.apiService = new WorkspaceApiService(baseDir);
     if (baseDir) {
-      this.workspacesBaseDir = baseDir;
+      this.workspacesBaseDir = path.join(baseDir, ".vulnerascan", "workspaces");
+      if (!fs.existsSync(this.workspacesBaseDir)) {
+        // Fallback for custom workspace directory layouts that don't use nested subfolders
+        this.workspacesBaseDir = baseDir;
+      }
     } else {
       const home = process.env.VULNERASCAN_HOME || homedir();
       this.workspacesBaseDir = path.join(home, ".vulnerascan", "workspaces");

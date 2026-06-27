@@ -98,9 +98,35 @@ export class DashboardServer {
               };
 
               const fileName = fileMap[format];
-              // Read from workspace runs directory
+              // Read from workspace runs directory. Try both flat layout and nested layout.
               const runDir = path.join(this.service.workspacesBaseDir, workspaceId, "runs", runId);
-              const filePath = path.join(runDir, fileName);
+              let filePath = path.join(runDir, fileName);
+
+              if (!fs.existsSync(filePath)) {
+                // Try layout where workspacesBaseDir is VULNERASCAN_HOME directly and runs is under workspaceId
+                const nestedRunDir = path.join(
+                  this.service.workspacesBaseDir,
+                  "workspaces",
+                  workspaceId,
+                  "runs",
+                  runId,
+                );
+                filePath = path.join(nestedRunDir, fileName);
+              }
+
+              if (!fs.existsSync(filePath)) {
+                // Try layout where workspacesBaseDir is tempBaseDir and we look up .vulnerascan/workspaces
+                const absoluteHomeDir = path.dirname(this.service.workspacesBaseDir);
+                const otherNestedRunDir = path.join(
+                  absoluteHomeDir,
+                  ".vulnerascan",
+                  "workspaces",
+                  workspaceId,
+                  "runs",
+                  runId,
+                );
+                filePath = path.join(otherNestedRunDir, fileName);
+              }
 
               if (fs.existsSync(filePath)) {
                 const contentTypeMap: Record<string, string> = {

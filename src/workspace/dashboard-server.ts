@@ -157,6 +157,49 @@ export class DashboardServer {
               }
             }
 
+            // Static Asset serving for dashboard
+            // Dist path: package contains 'dist/dashboard' folder.
+            // Since this runs from dist/workspace/dashboard-server.js or src/workspace/dashboard-server.ts:
+            // __dirname is path/to/vulnerascan/dist/workspace/ or path/to/vulnerascan/src/workspace/
+            // Root path is two levels up.
+            const __filename = url.fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
+            const rootDir = path.resolve(__dirname, "..", "..");
+
+            // Try packaged location (dist/dashboard) first, then fallback to local dev source folder
+            let staticDir = path.join(rootDir, "dist", "dashboard");
+            if (!fs.existsSync(staticDir)) {
+              staticDir = path.join(rootDir, "dashboard", "dist");
+            }
+
+            let filePath = path.join(staticDir, pathname);
+
+            // Check if file exists, if not, fallback to index.html for client routing
+            let fileExists = fs.existsSync(filePath) && fs.statSync(filePath).isFile();
+            if (!fileExists) {
+              filePath = path.join(staticDir, "index.html");
+              fileExists = fs.existsSync(filePath);
+            }
+
+            if (fileExists) {
+              const ext = path.extname(filePath).toLowerCase();
+              const contentTypeMap: Record<string, string> = {
+                ".html": "text/html",
+                ".js": "application/javascript",
+                ".css": "text/css",
+                ".json": "application/json",
+                ".png": "image/png",
+                ".jpg": "image/jpeg",
+                ".gif": "image/gif",
+                ".svg": "image/svg+xml",
+                ".ico": "image/x-icon",
+              };
+              const contentType = contentTypeMap[ext] || "application/octet-stream";
+              res.writeHead(200, { "Content-Type": contentType });
+              fs.createReadStream(filePath).pipe(res);
+              return;
+            }
+
             res.writeHead(404, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ error: "Not Found" }));
           } catch (err: unknown) {

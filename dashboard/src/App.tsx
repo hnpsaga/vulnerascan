@@ -15,7 +15,9 @@ import {
 
 import "./App.css";
 
-const API_BASE = "http://localhost:4000/api";
+const API_BASE = import.meta.env.DEV
+  ? "http://localhost:4000/api"
+  : `${window.location.origin}/api`;
 
 type View = "dashboard" | "projects" | "vulnerabilities" | "history" | "settings";
 

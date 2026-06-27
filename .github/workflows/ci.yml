@@ -29,7 +29,10 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm ci
+        # The dashboard is structured as a cleanly isolated subproject with its own package.json,
+        # dependencies (like React and Vite), and bundler configurations. We install both sets of
+        # dependencies to guarantee correct orchestration during root build orchestration steps.
+        run: npm ci && npm ci --prefix dashboard
 
       - name: Check formatting
         run: npm run format:check

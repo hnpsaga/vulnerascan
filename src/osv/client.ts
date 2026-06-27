@@ -112,6 +112,8 @@ export class OsvClient {
   }
 
   async queryPackages(packages: PackageCoordinate[]): Promise<OsvScanResult> {
+    // VULNERASCAN_TEST_MODE is an internal environment variable used exclusively
+    // by automated test suites to mock external API dependency resolution/queries.
     if (process.env.VULNERASCAN_TEST_MODE === "true") {
       return {
         provider: this.name,

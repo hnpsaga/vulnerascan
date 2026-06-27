@@ -111,7 +111,11 @@ dashboardCommand
 dashboardCommand
   .description("Start the dashboard UI server and web interface.")
   .option("-p, --port <port>", "Port to run the dashboard server on", "4000")
-  .option("-h, --host <host>", "Host to run the dashboard server on", "localhost")
+  .option(
+    "-h, --host <host>",
+    "Host to run the dashboard server on",
+    process.env.VULNERASCAN_HOST || "localhost",
+  )
   .action(async (opts: { port: string; host: string }) => {
     try {
       const { DashboardServer } = await import("../workspace/dashboard-server.js");

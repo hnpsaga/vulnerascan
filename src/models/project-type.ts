@@ -6,6 +6,7 @@ export enum ProjectType {
   Go = "go",
   Rust = "rust",
   Dotnet = "dotnet",
+  PHP = "php",
 }
 
 const projectTypeDisplayNames: Record<ProjectType, string> = {
@@ -16,6 +17,7 @@ const projectTypeDisplayNames: Record<ProjectType, string> = {
   [ProjectType.Go]: "Go",
   [ProjectType.Rust]: "Rust",
   [ProjectType.Dotnet]: ".NET",
+  [ProjectType.PHP]: "PHP",
 };
 
 export function getProjectTypeDisplayName(type: ProjectType): string {

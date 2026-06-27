@@ -37,11 +37,15 @@ src/
 │   ├── interfaces.ts   # Core interfaces for manifest managers, generators, and parsers
 │   ├── dependency-resolution-service.ts # Main service orchestrating resolution
 │   ├── models/         # Normalized dependency models (DependencyGraph, DependencyResolution)
-│   └── node/           # Node.js ecosystem resolver implementation
-│       ├── resolver.ts # Node resolver delegating to generator, parser, and manifest manager
-│       ├── npm-lockfile-generator.ts
-│       ├── npm-manifest-manager.ts
-│       └── npm-resolution-parser.ts
+│   ├── node/           # Node.js ecosystem resolver implementation
+│   │       ├── resolver.ts # Node resolver delegating to generator, parser, and manifest manager
+│   │       ├── npm-lockfile-generator.ts
+│   │       ├── npm-manifest-manager.ts
+│   │       └── npm-resolution-parser.ts
+│   └── php/            # PHP ecosystem resolver implementation
+│       ├── resolver.ts # PHP resolver delegating to parser and manifest manager
+│       ├── php-manifest-manager.ts
+│       └── php-resolution-parser.ts
 ├── vulnerability/      # Vulnerability matching & finding construction
 │   ├── matcher/        # Ecosystem-specific matchers
 │   │   ├── matcher.ts  # Base matcher interface

@@ -7,6 +7,7 @@ import { PythonResolver } from "./python/resolver.js";
 import { GoResolver } from "./go/resolver.js";
 import { RustResolver } from "./rust/resolver.js";
 import { DotnetResolver } from "./dotnet/resolver.js";
+import { PHPResolver } from "./php/resolver.js";
 import { ProjectType } from "../models/project-type.js";
 
 export class ResolverDispatcher {
@@ -16,6 +17,7 @@ export class ResolverDispatcher {
   private goResolver: GoResolver;
   private rustResolver: RustResolver;
   private dotnetResolver: DotnetResolver;
+  private phpResolver: PHPResolver;
 
   constructor() {
     this.nodeResolver = new NodeResolver();
@@ -24,6 +26,7 @@ export class ResolverDispatcher {
     this.goResolver = new GoResolver();
     this.rustResolver = new RustResolver();
     this.dotnetResolver = new DotnetResolver();
+    this.phpResolver = new PHPResolver();
   }
 
   async resolve(workspace: Workspace, run: Run, baseDir: string): Promise<DependencyResolution> {
@@ -43,6 +46,8 @@ export class ResolverDispatcher {
         return this.rustResolver.resolve(workspace, run, baseDir);
       case ProjectType.Dotnet:
         return this.dotnetResolver.resolve(workspace, run, baseDir);
+      case ProjectType.PHP:
+        return this.phpResolver.resolve(workspace, run, baseDir);
       default:
         throw new Error(`Unsupported project type for dependency resolution: ${projectType}`);
     }

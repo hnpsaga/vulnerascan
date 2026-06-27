@@ -1,0 +1,10 @@
+{
+  "name": "test/php-project-simple",
+  "description": "Simple PHP project without lockfile",
+  "require": {
+    "monolog/monolog": "^2.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0"
+  }
+}

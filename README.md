@@ -107,6 +107,7 @@ vulnerascan scan --path ~/projects/api --output ~/reports
 | Go        | `go.mod` / `go.sum`                   |
 | Rust      | `Cargo.toml` / `Cargo.lock`           |
 | .NET      | `*.csproj` / `packages.lock.json`     |
+| PHP       | `composer.json` / `composer.lock`     |
 
 If no supported project type is detected, the command exits with code 1:
 

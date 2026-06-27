@@ -108,3 +108,23 @@ dashboardCommand
       process.exit(1);
     }
   });
+
+dashboardCommand
+  .command("ui")
+  .description("Start the dashboard UI server and web interface.")
+  .option("-p, --port <port>", "Port to run the dashboard server on", "4000")
+  .option("-h, --host <host>", "Host to run the dashboard server on", "localhost")
+  .action(async (opts: { port: string; host: string }) => {
+    try {
+      const { DashboardServer } = await import("../workspace/dashboard-server.js");
+      const port = parseInt(opts.port, 10);
+      const server = new DashboardServer({ port, host: opts.host });
+      await server.start();
+      console.log(`VulneraScan Dashboard Backend listening at http://${opts.host}:${port}`);
+      console.log(`Run 'npm run dev' inside the dashboard directory to launch the web client.`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`Failed to start dashboard server: ${msg}`);
+      process.exit(1);
+    }
+  });

@@ -1,45 +1,144 @@
 # Quick Start
 
-Get up and running with VulneraScan in a few quick steps.
+This guide walks through your first vulnerability scan using VulneraScan.
+
+By the end of this guide you will have:
+
+* Verified your environment
+* Scanned a project
+* Reviewed the generated reports
+* Opened the dashboard
+
+If you haven't installed VulneraScan yet, complete the Installation guide first.
 
 ---
 
-## 1. Verify Your Environment
+# 1. Verify Your Environment
 
-Before starting a scan, check if your current workspace environment has the required manifest files and configurations:
+Confirm that VulneraScan is installed correctly:
+
+```bash
+vulnerascan version
+```
+
+Then verify that your environment is ready:
 
 ```bash
 vulnerascan doctor
 ```
 
-This will inspect the environment, identify target directories, and check connectivity to the vulnerability database.
+The `doctor` command checks your operating system, configuration, and the ecosystem tooling available on your machine. Only the tools required for the ecosystems you intend to scan need to be installed.
 
 ---
 
-## 2. Scan Your Repository
+# 2. Scan Your First Project
 
-To scan your current directory for vulnerabilities, simply run:
+Navigate to the root directory of a supported project and run:
 
 ```bash
 vulnerascan scan
 ```
 
-VulneraScan will:
+By default, VulneraScan scans the current working directory.
 
-1. Discover project manifests.
-2. Resolve local dependency graphs.
-3. Fetch vulnerability data from the OSV database (utilizing cache if available).
-4. Run semantic version checks to isolate vulnerabilities.
-5. Print findings directly to the console and store the run results.
+To scan another directory:
+
+```bash
+vulnerascan scan --path /path/to/project
+```
+
+To also write copies of the generated reports into a directory of your choice:
+
+```bash
+vulnerascan scan --output ./security-reports
+```
+
+During the scan VulneraScan:
+
+1. Detects the project ecosystem.
+2. Resolves project dependencies.
+3. Queries the Open Source Vulnerability (OSV) database.
+4. Matches vulnerabilities against your dependency versions.
+5. Generates reports.
+6. Prints a summary in the terminal.
+
+Your source project is never modified during dependency resolution. Any required lockfiles are generated inside VulneraScan's isolated workspace rather than your repository.
 
 ---
 
-## 3. View the Dashboard
+# 3. Review the Results
 
-To start a local dashboard and explore the dependency paths and vulnerability details interactively in your browser:
+Every scan stores its complete results inside the local VulneraScan workspace.
+
+If you supplied an output directory with `--output`, copies of the generated reports are also written there.
+
+The available reports include:
+
+* Markdown summary
+* JSON report
+* CSV report
+* SARIF
+* CycloneDX SBOM
+* SPDX SBOM
+* AI context (JSON)
+* AI context (Markdown)
+
+See the Reports and Exporters documentation for details about each format.
+
+---
+
+# 4. Open the Dashboard
+
+Launch the local dashboard:
 
 ```bash
 vulnerascan dashboard
 ```
 
-Once started, open the link printed in the terminal (usually `http://localhost:3000`) to access the dashboard.
+The dashboard provides a browser-based view of:
+
+* Registered projects
+* Scan history
+* Dependency statistics
+* Vulnerability summaries
+* Individual scan results
+
+Every completed scan is automatically added to the dashboard's local workspace.
+
+When running inside Docker, open your browser manually using the URL displayed by the CLI.
+
+---
+
+# 5. Typical Workflow
+
+A typical development workflow looks like this:
+
+```text
+Install
+    ↓
+Verify (doctor)
+    ↓
+Run a scan
+    ↓
+Review reports
+    ↓
+Open dashboard
+    ↓
+Fix vulnerabilities
+    ↓
+Run another scan
+```
+
+Because VulneraScan stores scan history locally, subsequent scans build on the same workspace and become immediately available through the dashboard.
+
+---
+
+# Next Steps
+
+After completing your first scan, you may want to explore:
+
+* CLI Reference
+* Supported Ecosystems
+* Reports and Exporters
+* Dashboard
+* Architecture (for contributors)

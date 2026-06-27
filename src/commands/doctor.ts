@@ -3,6 +3,7 @@ import { homedir, platform } from "os";
 import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import process from "process";
+import { execSync } from "child_process";
 
 const home = process.env.VULNERASCAN_HOME || homedir();
 const CONFIG_DIR = join(home, ".vulnerascan");
@@ -11,6 +12,7 @@ interface CheckResult {
   label: string;
   passed: boolean;
   detail?: string;
+  optional?: boolean;
 }
 
 function checkNodeVersion(): CheckResult {
@@ -35,14 +37,6 @@ function checkPlatform(): CheckResult {
   };
 }
 
-function checkCLI(): CheckResult {
-  return {
-    label: "CLI installed",
-    passed: true,
-    detail: "vulnerascan is reachable",
-  };
-}
-
 function checkConfigDir(): CheckResult {
   if (!existsSync(CONFIG_DIR)) {
     mkdirSync(CONFIG_DIR, { recursive: true });
@@ -55,10 +49,41 @@ function checkConfigDir(): CheckResult {
   };
 }
 
+function checkEcosystemTool(
+  label: string,
+  cmd: string,
+  versionArgs: string[] = ["--version"],
+): CheckResult {
+  try {
+    const output = execSync(`${cmd} ${versionArgs.join(" ")}`, {
+      stdio: "pipe",
+      env: { ...process.env },
+      timeout: 1000,
+    })
+      .toString()
+      .trim()
+      .split("\n")[0];
+    return {
+      label,
+      passed: true,
+      detail: output,
+      optional: true,
+    };
+  } catch {
+    return {
+      label,
+      passed: false,
+      detail: "Not found in PATH",
+      optional: true,
+    };
+  }
+}
+
 function printCheck(result: CheckResult): void {
-  const icon = result.passed ? "\u2714" : "\u2716";
+  const icon = result.passed ? "\u2714" : result.optional ? "\u26A0" : "\u2716";
+  const prefix = result.optional ? "[Ecosystem] " : "";
   const detail = result.detail ? ` (${result.detail})` : "";
-  console.log(`${icon} ${result.label}${detail}`);
+  console.log(`${icon} ${prefix}${result.label}${detail}`);
 }
 
 export const doctorCommand = new Command("doctor")
@@ -66,24 +91,46 @@ export const doctorCommand = new Command("doctor")
   .action(() => {
     console.log("Running VulneraScan doctor checks...\n");
 
-    const checks: CheckResult[] = [
-      checkNodeVersion(),
-      checkPlatform(),
-      checkCLI(),
-      checkConfigDir(),
+    const coreChecks: CheckResult[] = [checkNodeVersion(), checkPlatform(), checkConfigDir()];
+
+    const ecosystemTools = [
+      { label: "npm package manager", cmd: "npm" },
+      { label: "pnpm package manager", cmd: "pnpm" },
+      { label: "yarn package manager", cmd: "yarn" },
+      { label: "Maven (Java)", cmd: "mvn" },
+      { label: "Gradle (Java)", cmd: "gradle" },
+      { label: "pip (Python)", cmd: "pip", args: ["--version"] },
+      { label: "Python 3", cmd: "python3", args: ["--version"] },
+      { label: "Go (Golang)", cmd: "go", args: ["version"] },
+      { label: "Cargo (Rust)", cmd: "cargo" },
+      { label: "Composer (PHP)", cmd: "composer" },
+      { label: "dotnet CLI (.NET)", cmd: "dotnet", args: ["--version"] },
     ];
 
-    for (const check of checks) {
+    const ecosystemChecks: CheckResult[] = ecosystemTools.map((t) =>
+      checkEcosystemTool(t.label, t.cmd, t.args),
+    );
+
+    console.log("--- Core Environment Checks ---");
+    for (const check of coreChecks) {
       printCheck(check);
     }
 
-    const allPassed = checks.every((c) => c.passed);
+    console.log("\n--- Ecosystem Tooling Diagnostics (Optional) ---");
+    for (const check of ecosystemChecks) {
+      printCheck(check);
+    }
+
+    const corePassed = coreChecks.every((c) => c.passed);
     console.log("");
 
-    if (allPassed) {
-      console.log("All checks passed. VulneraScan is ready.");
+    if (corePassed) {
+      console.log("All core checks passed. VulneraScan runtime environment is healthy.");
+      console.log(
+        "Note: Missing ecosystem tools only affect project scanning for those specific platforms.",
+      );
     } else {
-      console.log("Some checks failed. Please review the output above.");
+      console.log("Core environment checks failed. Please resolve the errors above.");
       process.exit(1);
     }
   });

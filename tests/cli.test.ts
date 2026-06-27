@@ -209,8 +209,8 @@ describe("doctor command", () => {
     const result = runCLI("doctor");
     expect(result.stdout).toContain("Node version");
     expect(result.stdout).toContain("Platform");
-    expect(result.stdout).toContain("CLI installed");
     expect(result.stdout).toContain("Configuration directory");
+    expect(result.stdout).toContain("npm package manager");
   });
 
   it("creates ~/.vulnerascan directory if missing", () => {

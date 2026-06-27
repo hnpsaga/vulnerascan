@@ -61,6 +61,31 @@ export class ScanPipeline {
       const resolution = await resolutionService.resolve(workspace, run);
 
       if (resolution.status === "failed") {
+        const { WorkspaceApiService } = await import("../workspace/workspace-api-service.js");
+        const apiService = new WorkspaceApiService();
+        await apiService.registerProject({
+          path: directory,
+          name: workspace.name,
+          ecosystem: project.type,
+          status: "failed",
+          workspaceId: workspace.id,
+        });
+
+        await apiService.metadataService.recordRun(
+          workspace.id,
+          {
+            runId: run.id,
+            timestamp: run.timestamp,
+            name: run.name,
+            status: "failed",
+            ecosystem: project.type,
+          },
+          {
+            status: "failed",
+            error: "Dependency resolution failed.",
+          },
+        );
+
         console.error("Dependency resolution failed.");
         return 1;
       }
@@ -131,6 +156,41 @@ export class ScanPipeline {
 
         onLog(`Findings generated: ${detectionResult.findings.length}`);
 
+        // Register/update project and metadata on success
+        const { WorkspaceApiService } = await import("../workspace/workspace-api-service.js");
+        const apiService = new WorkspaceApiService();
+        const findingsCount = detectionResult.findings.length;
+        const projectStatus = findingsCount > 0 ? "vulnerable" : "healthy";
+
+        await apiService.registerProject({
+          path: directory,
+          name: workspace.name,
+          ecosystem: project.type,
+          status: projectStatus,
+          workspaceId: workspace.id,
+        });
+
+        const startTime = new Date(run.timestamp).getTime();
+        const durationMs = Date.now() - startTime;
+
+        await apiService.metadataService.recordRun(
+          workspace.id,
+          {
+            runId: run.id,
+            timestamp: run.timestamp,
+            name: run.name,
+            status: "completed",
+            durationMs,
+            ecosystem: project.type,
+          },
+          {
+            status: projectStatus,
+            directDependencies: resolution.directDependencies,
+            totalDependencies: resolution.totalDependencies,
+            vulnerabilitiesCount: findingsCount,
+          },
+        );
+
         // Reporting Engine execution
         const { Reporter } = await import("../reporting/index.js");
         const reporter = new Reporter({
@@ -141,6 +201,31 @@ export class ScanPipeline {
         return await reporter.report(detectionResult);
       }
     } else {
+      // For unsupported/other ecosystems that we just discover but don't resolve
+      const { WorkspaceApiService } = await import("../workspace/workspace-api-service.js");
+      const apiService = new WorkspaceApiService();
+      await apiService.registerProject({
+        path: directory,
+        name: workspace.name,
+        ecosystem: project.type,
+        status: "unknown",
+        workspaceId: workspace.id,
+      });
+
+      await apiService.metadataService.recordRun(
+        workspace.id,
+        {
+          runId: run.id,
+          timestamp: run.timestamp,
+          name: run.name,
+          status: "completed",
+          ecosystem: project.type,
+        },
+        {
+          status: "unknown",
+        },
+      );
+
       onLog("");
       onLog(
         `Dependency resolution and vulnerability scanning are not yet supported for ${getProjectTypeDisplayName(project.type)} projects.`,

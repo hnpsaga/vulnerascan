@@ -20,6 +20,30 @@ RUN npm run build
 # Stage 2: Minimal runtime image
 FROM node:20-alpine
 
+# Define build arguments for OCI metadata
+ARG TITLE="vulnerascan"
+ARG DESCRIPTION="Developer-first vulnerability scanner for modern software projects."
+ARG SOURCE="https://github.com/hnpsaga/vulnerascan"
+ARG DOCUMENTATION="https://github.com/hnpsaga/vulnerascan#readme"
+ARG LICENSES="MIT"
+ARG VERSION="0.0.3"
+ARG REVISION="unknown"
+ARG VENDOR="Hari Naga Praveen Saga"
+ARG AUTHORS="Hari Naga Praveen Saga"
+ARG CREATED=""
+
+# Apply OCI labels to the image
+LABEL org.opencontainers.image.title="${TITLE}" \
+      org.opencontainers.image.description="${DESCRIPTION}" \
+      org.opencontainers.image.source="${SOURCE}" \
+      org.opencontainers.image.documentation="${DOCUMENTATION}" \
+      org.opencontainers.image.licenses="${LICENSES}" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${REVISION}" \
+      org.opencontainers.image.vendor="${VENDOR}" \
+      org.opencontainers.image.authors="${AUTHORS}" \
+      org.opencontainers.image.created="${CREATED}"
+
 WORKDIR /app
 
 # Install git since scans might need it for VCS details, and install pnpm globally for package resolution support

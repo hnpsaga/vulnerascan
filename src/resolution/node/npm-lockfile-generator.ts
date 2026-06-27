@@ -1,7 +1,7 @@
 import { LockfileGenerator } from "../interfaces.js";
 import path from "path";
 import fs from "fs";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 export class NodeLockfileGenerator implements LockfileGenerator {
   async generateLockfile(workspacePath: string): Promise<void> {
@@ -42,19 +42,19 @@ export class NodeLockfileGenerator implements LockfileGenerator {
 
     try {
       if (packageManager === "pnpm") {
-        execSync("pnpm import", {
+        execFileSync("pnpm", ["import"], {
           cwd: generatedDir,
           stdio: "pipe",
           env: { ...process.env },
         });
       } else if (packageManager === "yarn") {
-        execSync("yarn install", {
+        execFileSync("yarn", ["install"], {
           cwd: generatedDir,
           stdio: "pipe",
           env: { ...process.env },
         });
       } else {
-        execSync("npm install --package-lock-only", {
+        execFileSync("npm", ["install", "--package-lock-only"], {
           cwd: generatedDir,
           stdio: "pipe",
           env: {
@@ -66,7 +66,7 @@ export class NodeLockfileGenerator implements LockfileGenerator {
     } catch (error) {
       // Fallback: try generating npm package-lock.json if pnpm/yarn fails
       try {
-        execSync("npm install --package-lock-only", {
+        execFileSync("npm", ["install", "--package-lock-only"], {
           cwd: generatedDir,
           stdio: "pipe",
           env: {

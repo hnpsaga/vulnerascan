@@ -25,21 +25,19 @@ VulneraScan is an open-source, developer-first vulnerability scanner designed to
 
 ## Installation
 
+For full installation options and requirements, see the [Installation Guide](file:///home/hnpsaga/projects/vulnerascan/docs/getting-started/installation.md).
+
 Install globally using npm:
 
 ```bash
 npm install -g @hnpsaga/vulnerascan
 ```
 
-Or execute directly on demand using `npx`:
-
-```bash
-npx @hnpsaga/vulnerascan --help
-```
-
 ---
 
 ## Quick Start
+
+For detailed step-by-step instructions, see the [Quick Start Guide](file:///home/hnpsaga/projects/vulnerascan/docs/getting-started/quick-start.md).
 
 1. **Verify your setup**:
    ```bash
@@ -58,14 +56,27 @@ npx @hnpsaga/vulnerascan --help
 
 ## Learn More
 
-For deeper documentation, browse our topics:
+Explore our detailed documentation sections:
 
-- [Architecture & Design](file:///home/hnpsaga/projects/vulnerascan/docs/architecture/README.md) — Directory layouts, scan pipeline mechanics, and provider abstraction layers.
-- [CLI Reference](file:///home/hnpsaga/projects/vulnerascan/docs/cli/README.md) — Options and examples for `doctor`, `scan`, and other commands.
-- [Local Dashboard](file:///home/hnpsaga/projects/vulnerascan/docs/dashboard/README.md) — Aggregated views and dependency pathways.
-- [Workspace Schema](file:///home/hnpsaga/projects/vulnerascan/docs/workspace/README.md) — Local directory structure for workspace metadata and run timeline history.
-- [Ecosystem Support](file:///home/hnpsaga/projects/vulnerascan/docs/ecosystems/README.md) — Supported language files and manifest rules.
-- [Report Formats & Exports](file:///home/hnpsaga/projects/vulnerascan/docs/reports/README.md) — Details on generated run artifacts and format exporters (SARIF, CycloneDX, SPDX).
-- [Contributor & Developer Guide](file:///home/hnpsaga/projects/vulnerascan/docs/development/README.md) — Setup guidelines, branch conventions, and compliance test commands.
+- **[Getting Started](file:///home/hnpsaga/projects/vulnerascan/docs/getting-started/quick-start.md)**: Jump in with [Installation](file:///home/hnpsaga/projects/vulnerascan/docs/getting-started/installation.md) and [Quick Start](file:///home/hnpsaga/projects/vulnerascan/docs/getting-started/quick-start.md).
+- **[CLI Reference](file:///home/hnpsaga/projects/vulnerascan/docs/cli/README.md)**: Explore the command-line interface commands and options.
+- **[Dashboard](file:///home/hnpsaga/projects/vulnerascan/docs/dashboard/README.md)**: Learn about the interactive local web dashboard.
+- **[Workspace Schema](file:///home/hnpsaga/projects/vulnerascan/docs/workspace/README.md)**: Understand the directory structure and metadata layouts.
+- **[Reports](file:///home/hnpsaga/projects/vulnerascan/docs/reports/README.md)**: Details on run output files and formats.
+- **[Exporters](file:///home/hnpsaga/projects/vulnerascan/docs/exporters/README.md)**: Info on exporting formats like SARIF, CycloneDX, and SPDX.
+- **[Supported Ecosystems](file:///home/hnpsaga/projects/vulnerascan/docs/ecosystems/supported-ecosystems.md)**: Check supported package managers and manifest specifications.
+- **[Architecture & Design](file:///home/hnpsaga/projects/vulnerascan/docs/architecture/README.md)**: Deep dive into the pipeline architecture and [OSV Integration](file:///home/hnpsaga/projects/vulnerascan/docs/architecture/osv-integration.md).
+- **[Development](file:///home/hnpsaga/projects/vulnerascan/docs/development/README.md)**: Set up local development and view the project [Roadmap](file:///home/hnpsaga/projects/vulnerascan/docs/development/roadmap.md).
+- **[Examples](file:///home/hnpsaga/projects/vulnerascan/docs/examples/node.md)**: Access language-specific scan configurations and samples:
+  - [Node.js](file:///home/hnpsaga/projects/vulnerascan/docs/examples/node.md)
+  - [Java](file:///home/hnpsaga/projects/vulnerascan/docs/examples/java.md)
+  - [Python](file:///home/hnpsaga/projects/vulnerascan/docs/examples/python.md)
+  - [Go](file:///home/hnpsaga/projects/vulnerascan/docs/examples/go.md)
+  - [Rust](file:///home/hnpsaga/projects/vulnerascan/docs/examples/rust.md)
+  - [.NET](file:///home/hnpsaga/projects/vulnerascan/docs/examples/dotnet.md)
+  - [PHP](file:///home/hnpsaga/projects/vulnerascan/docs/examples/php.md)
+
+---
+
 - [Security Policy](file:///home/hnpsaga/projects/vulnerascan/SECURITY.md) — Instructions for submitting security vulnerabilities.
 - [License details](file:///home/hnpsaga/projects/vulnerascan/LICENSE) — MIT License info.

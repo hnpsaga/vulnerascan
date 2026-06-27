@@ -1,4 +1,4 @@
-# Ecosystems
+# Supported Ecosystems
 
 VulneraScan supports project manifest detection and dependency graph resolution across multiple software language environments.
 

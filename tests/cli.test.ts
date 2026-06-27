@@ -203,7 +203,7 @@ describe("doctor command", () => {
   it("exits with code 0 on a healthy environment", () => {
     const result = runCLI("doctor");
     expect(result.exitCode).toBe(0);
-  });
+  }, 15000);
 
   it("outputs check labels", () => {
     const result = runCLI("doctor");

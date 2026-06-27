@@ -1,4 +1,4 @@
-import { ProjectType, getProjectTypeDisplayName } from "../models/project-type.js";
+import { ProjectType } from "../models/project-type.js";
 import { ProjectDiscoveryService } from "../discovery/project-discovery.js";
 import { WorkspaceManager } from "../workspace/workspace-manager.js";
 import { RunManager } from "../workspace/run-manager.js";
@@ -200,40 +200,7 @@ export class ScanPipeline {
         });
         return await reporter.report(detectionResult);
       }
-    } else {
-      // For unsupported/other ecosystems that we just discover but don't resolve
-      const { WorkspaceApiService } = await import("../workspace/workspace-api-service.js");
-      const apiService = new WorkspaceApiService();
-      await apiService.registerProject({
-        path: directory,
-        name: workspace.name,
-        ecosystem: project.type,
-        status: "unknown",
-        workspaceId: workspace.id,
-      });
-
-      await apiService.metadataService.recordRun(
-        workspace.id,
-        {
-          runId: run.id,
-          timestamp: run.timestamp,
-          name: run.name,
-          status: "completed",
-          ecosystem: project.type,
-        },
-        {
-          status: "unknown",
-        },
-      );
-
-      onLog("");
-      onLog(
-        `Dependency resolution and vulnerability scanning are not yet supported for ${getProjectTypeDisplayName(project.type)} projects.`,
-      );
-      onLog("Currently, only Node.js/npm projects are supported for full dependency analysis.");
-      return 0;
     }
-
     return 0;
   }
 }

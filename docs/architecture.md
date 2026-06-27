@@ -145,3 +145,23 @@ VulneraScan organizes project scan outcomes and history in a centralized databas
 - **Project Registry Service (`src/workspace/project-registry-service.ts`)**: Serves as the central repository registry to record and query tracked directories, ecosystems, and overall statuses without traversing subdirectories.
 - **Workspace Metadata Service (`src/workspace/workspace-metadata-service.ts`)**: Coordinates recording run index timelines and maintaining statistics on direct/transitive dependencies and vulnerability counts.
 - **Workspace API Service (`src/workspace/workspace-api-service.ts`)**: Clean wrapper exposes APIs for project registration, details lookup, lists, scan history, and run summaries.
+
+---
+
+## Dashboard Backend Service
+
+VulneraScan provides a presentation-oriented dashboard service to aggregate workspace and project scan details for consumers (like a CLI, future web UI, REST API, or exports) without requiring direct parsing of raw run directories or workspace files.
+
+The dashboard service behaves strictly as a presentation-aggregation layer.
+
+### Key Responsibilities
+
+1. **Information Aggregation**: Loads registered projects, latest scans, scan histories, and individual vulnerability records to produce unified summaries.
+2. **Normalized Presentation Models**: Maps workspace metadata and completed scan runs to normalized presentation-oriented contracts (`src/models/dashboard.ts`):
+   - **`DashboardSummary`**: System-wide status statistics, vulnerability severities, ecosystems breakdown, and project summary list.
+   - **`ProjectSummary`**: Specific project details, workspace identifiers, latest scan run details, and aggregated vulnerabilities.
+   - **`ScanSummary`**: Individual execution status, dependency counts, duration, and error/findings summary.
+   - **`VulnerabilitySummary`**: Categorized breakdown of total vulnerabilities by severity levels (`critical`, `high`, `medium`, `low`, `unknown`).
+   - **`HistoricalScanSummary`**: Normalized record of completed runs with timeline details.
+3. **Filtering & Statistics**: Evaluates filter configurations (by ecosystem, project ID, severity, or scan timeline dates) efficiently.
+4. **Service Boundaries**: Depends strictly on `ProjectRegistry`, `WorkspaceServices`, and the `RunIndex`. It does not perform dependency resolution, version matching, OSV querying, or direct scanning.

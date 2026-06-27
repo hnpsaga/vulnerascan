@@ -33,3 +33,13 @@ export type {
   VulnerabilityFinding,
   VulnerabilityDetectionResult,
 } from "./vulnerability/vulnerability-models.js";
+
+export { DashboardService } from "./workspace/dashboard-service.js";
+export type {
+  VulnerabilitySummary,
+  EcosystemSummary,
+  ScanSummary,
+  ProjectSummary,
+  DashboardSummary,
+  HistoricalScanSummary,
+} from "./models/dashboard.js";

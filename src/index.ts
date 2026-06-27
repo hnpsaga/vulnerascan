@@ -6,8 +6,18 @@ export { ProjectDiscoveryService } from "./discovery/project-discovery.js";
 
 export { WorkspaceManager } from "./workspace/workspace-manager.js";
 export { RunManager } from "./workspace/run-manager.js";
+export { ProjectRegistryService } from "./workspace/project-registry-service.js";
+export { WorkspaceMetadataService } from "./workspace/workspace-metadata-service.js";
+export { WorkspaceApiService } from "./workspace/workspace-api-service.js";
 export type { Workspace } from "./workspace/models/workspace.js";
 export type { Run } from "./workspace/models/run.js";
+export type { ProjectRegistry, ProjectRegistryEntry } from "./workspace/models/project-registry.js";
+export type {
+  WorkspaceMetadata,
+  RunIndex,
+  RunIndexEntry,
+  ScanStats,
+} from "./workspace/models/workspace-metadata.js";
 
 export { DependencyResolutionService } from "./resolution/dependency-resolution-service.js";
 export type { DependencyResolution } from "./resolution/models/dependency-resolution.js";

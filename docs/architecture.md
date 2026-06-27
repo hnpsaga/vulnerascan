@@ -56,6 +56,18 @@ src/
 │   └── vulnerability-models.ts # Shared models
 ├── reporting/          # Markdown, JSON, Console reporting engine
 ├── workspace/          # Workspace & execution run filesystem managers
+│   ├── models/         # Workspace data structures
+│   │   ├── discovery.ts
+│   │   ├── project-registry.ts # ProjectRegistryEntry and ProjectRegistry schema
+│   │   ├── run.ts
+│   │   ├── workspace-metadata.ts # WorkspaceMetadata, RunIndex, and RunIndexEntry schema
+│   │   └── workspace.ts
+│   ├── constants.ts
+│   ├── project-registry-service.ts # Global project tracking and lookup registry
+│   ├── run-manager.ts
+│   ├── workspace-api-service.ts    # Reusable business logic APIs for CLI/Dashboard
+│   ├── workspace-manager.ts
+│   └── workspace-metadata-service.ts # Run indexing and metadata updating logic
 └── utils/              # Shared utility functions
 ```
 
@@ -104,3 +116,32 @@ To prepare the codebase for multi-language support, modules are strictly isolate
 2. **OSV Integration**: The `osv` module is fully isolated. Provider-specific raw HTTP/API shapes are kept private, and it returns only normalized canonical domain models (`VulnerabilityRecord`).
 3. **Vulnerability Detection**: The `vulnerability` module performs version comparison and finding generation against the dependency graph.
 4. **Reporting**: The `reporting` module depends only on normalized findings and produces structured output. It contains no vulnerability detection or dependency resolution logic.
+
+---
+
+## Global Workspace & Project Registry
+
+VulneraScan organizes project scan outcomes and history in a centralized database-less storage system using simple structured filesystem directories under the `VULNERASCAN_HOME` environment variable (default: `~/.vulnerascan`).
+
+### Directory Layout
+
+```
+~/.vulnerascan/
+├── projects.json                  # Global Project Registry tracking all known projects
+└── workspaces/
+    └── <workspace_id>/            # Unique project workspace directory (derived from project path)
+        ├── workspace.json         # Raw workspace metadata
+        ├── metadata.json          # Workspace statistics, status, latest successful/failed scans
+        ├── run-index.json         # Scan timeline and run summary index
+        └── runs/
+            └── <run_timestamp>/   # Individual execution folder containing reports/artifacts
+                ├── run.json
+                ├── discovery.json
+                └── vulnerabilities.json
+```
+
+### Key Services
+
+- **Project Registry Service (`src/workspace/project-registry-service.ts`)**: Serves as the central repository registry to record and query tracked directories, ecosystems, and overall statuses without traversing subdirectories.
+- **Workspace Metadata Service (`src/workspace/workspace-metadata-service.ts`)**: Coordinates recording run index timelines and maintaining statistics on direct/transitive dependencies and vulnerability counts.
+- **Workspace API Service (`src/workspace/workspace-api-service.ts`)**: Clean wrapper exposes APIs for project registration, details lookup, lists, scan history, and run summaries.

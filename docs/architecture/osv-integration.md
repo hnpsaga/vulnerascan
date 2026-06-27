@@ -105,12 +105,12 @@ The OSV subsystem transforms advisory data into a normalized internal representa
 
 Normalization includes:
 
-* advisory metadata
-* affected packages
-* version information
-* references
-* severity information
-* publication timestamps
+- advisory metadata
+- affected packages
+- version information
+- references
+- severity information
+- publication timestamps
 
 The vulnerability detection subsystem consumes only this normalized representation and does not depend directly on the OSV API.
 
@@ -122,9 +122,9 @@ To improve performance and reduce unnecessary network traffic, VulneraScan maint
 
 The cache provides several benefits:
 
-* Faster repeated scans.
-* Reduced API requests.
-* Improved resilience during intermittent network issues.
+- Faster repeated scans.
+- Reduced API requests.
+- Improved resilience during intermittent network issues.
 
 Cache entries automatically expire after a configurable period.
 
@@ -151,8 +151,8 @@ The local configuration file allows contributors and users to configure cache be
 
 Supported options include:
 
-* enabling or disabling the cache
-* configuring cache lifetime
+- enabling or disabling the cache
+- configuring cache lifetime
 
 These settings affect only the OSV integration subsystem.
 
@@ -164,10 +164,10 @@ The OSV integration layer is designed to isolate external failures from the rema
 
 It provides:
 
-* request timeouts
-* automatic retries for transient failures
-* graceful handling of partial failures
-* normalized error reporting
+- request timeouts
+- automatic retries for transient failures
+- graceful handling of partial failures
+- normalized error reporting
 
 When possible, scans continue even if individual advisory requests fail.
 
@@ -209,10 +209,10 @@ Network failures are contained within the OSV subsystem and do not propagate thr
 
 Contributors modifying the OSV subsystem should preserve the separation between:
 
-* dependency resolution
-* provider communication
-* vulnerability normalization
-* vulnerability detection
+- dependency resolution
+- provider communication
+- vulnerability normalization
+- vulnerability detection
 
 Keeping these responsibilities independent ensures changes to provider communication do not affect reporting, exporters, or dashboard functionality.
 
@@ -222,10 +222,10 @@ Keeping these responsibilities independent ensures changes to provider communica
 
 The current implementation has several known architectural limitations.
 
-* Package coordinates are transmitted in plaintext over HTTPS, as required by the OSV API.
-* Request batching and advisory retrieval concurrency use fixed implementation limits.
-* Cached entries expire based on time and are refreshed on demand rather than being proactively cleaned up.
-* If a batch request fails, the affected batch is retried as a whole rather than being subdivided into smaller requests.
+- Package coordinates are transmitted in plaintext over HTTPS, as required by the OSV API.
+- Request batching and advisory retrieval concurrency use fixed implementation limits.
+- Cached entries expire based on time and are refreshed on demand rather than being proactively cleaned up.
+- If a batch request fails, the affected batch is retried as a whole rather than being subdivided into smaller requests.
 
 These limitations are implementation characteristics rather than architectural constraints.
 
@@ -235,5 +235,5 @@ These limitations are implementation characteristics rather than architectural c
 
 For additional information, see:
 
-* **Architecture Overview** — Overall system architecture.
-* **Dependency Graph** — Canonical dependency model consumed by the OSV subsystem.
+- **Architecture Overview** — Overall system architecture.
+- **Dependency Graph** — Canonical dependency model consumed by the OSV subsystem.

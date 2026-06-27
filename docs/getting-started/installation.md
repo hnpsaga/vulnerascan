@@ -12,20 +12,20 @@ Choose the installation method that best matches your workflow.
 
 Requirements:
 
-* Node.js 18 or later
-* npm 8 or later
+- Node.js 18 or later
+- npm 8 or later
 
 Supported platforms:
 
-* Linux
-* macOS
-* Windows
+- Linux
+- macOS
+- Windows
 
 ### Docker
 
 Requirements:
 
-* Docker Engine
+- Docker Engine
 
 Docker is recommended if you prefer an isolated runtime or do not want to install Node.js locally.
 
@@ -165,9 +165,9 @@ If you used a persistent Docker volume or host directory for the workspace, remo
 
 # Notes
 
-* Native installations use your locally installed ecosystem tooling to resolve project dependencies.
-* The `doctor` command reports which ecosystem tools are available and helps identify any missing dependencies before running a scan.
-* Docker bundles the runtime required to execute VulneraScan, but the mounted project remains unchanged. All workspace data is stored separately from your source code.
+- Native installations use your locally installed ecosystem tooling to resolve project dependencies.
+- The `doctor` command reports which ecosystem tools are available and helps identify any missing dependencies before running a scan.
+- Docker bundles the runtime required to execute VulneraScan, but the mounted project remains unchanged. All workspace data is stored separately from your source code.
 
 ---
 

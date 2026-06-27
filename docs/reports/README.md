@@ -37,10 +37,10 @@ vulnerabilities.md
 
 The Markdown report provides an easy-to-read summary of:
 
-* detected vulnerabilities
-* affected packages
-* severity information
-* vulnerability references
+- detected vulnerabilities
+- affected packages
+- severity information
+- vulnerability references
 
 This report is intended for developers and security reviews.
 
@@ -54,9 +54,9 @@ vulnerabilities.csv
 
 The CSV report is useful for:
 
-* spreadsheet analysis
-* reporting
-* importing into external systems
+- spreadsheet analysis
+- reporting
+- importing into external systems
 
 ---
 
@@ -86,10 +86,10 @@ SARIF is intended for static analysis and security tooling.
 
 Typical uses include:
 
-* CI/CD pipelines
-* GitHub Code Scanning
-* Security dashboards
-* Enterprise security platforms
+- CI/CD pipelines
+- GitHub Code Scanning
+- Security dashboards
+- Enterprise security platforms
 
 ---
 
@@ -103,10 +103,10 @@ The CycloneDX Software Bill of Materials describes the project's dependencies to
 
 Typical uses include:
 
-* software supply chain management
-* compliance
-* SBOM exchange
-* security audits
+- software supply chain management
+- compliance
+- SBOM exchange
+- security audits
 
 ---
 
@@ -120,10 +120,10 @@ The SPDX Software Bill of Materials captures dependency and licensing informatio
 
 Typical uses include:
 
-* license compliance
-* SBOM exchange
-* governance
-* software inventory
+- license compliance
+- SBOM exchange
+- governance
+- software inventory
 
 ---
 
@@ -175,11 +175,11 @@ Every successful scan is automatically recorded in the local workspace.
 
 The dashboard uses this scan history to display:
 
-* registered projects
-* scan history
-* vulnerability summaries
-* dependency statistics
-* detailed scan results
+- registered projects
+- scan history
+- vulnerability summaries
+- dependency statistics
+- detailed scan results
 
 Exporting or deleting copied reports from an `--output` directory does not affect the dashboard.
 
@@ -187,8 +187,8 @@ Exporting or deleting copied reports from an `--output` directory does not affec
 
 # Best Practices
 
-* Archive generated reports as CI/CD build artifacts.
-* Use SARIF with code scanning platforms.
-* Use CycloneDX or SPDX when sharing SBOMs with customers or compliance tools.
-* Use AI Context reports when supplying project security information to AI assistants.
-* Keep historical scan results to track how vulnerabilities change over time.
+- Archive generated reports as CI/CD build artifacts.
+- Use SARIF with code scanning platforms.
+- Use CycloneDX or SPDX when sharing SBOMs with customers or compliance tools.
+- Use AI Context reports when supplying project security information to AI assistants.
+- Keep historical scan results to track how vulnerabilities change over time.

@@ -12,10 +12,10 @@ Different ecosystems describe dependencies using different manifests and lockfil
 
 For example:
 
-* Node.js uses `package-lock.json`
-* Rust uses `Cargo.lock`
-* Go uses `go.mod` and `go.sum`
-* Maven uses `pom.xml`
+- Node.js uses `package-lock.json`
+- Rust uses `Cargo.lock`
+- Go uses `go.mod` and `go.sum`
+- Maven uses `pom.xml`
 
 Rather than requiring every subsystem to understand every ecosystem, VulneraScan converts each project into a single language-agnostic dependency graph.
 
@@ -95,10 +95,10 @@ Each relationship identifies which package depends on another.
 
 This structure enables VulneraScan to:
 
-* determine dependency paths
-* distinguish direct and transitive dependencies
-* calculate dependency statistics
-* generate standards-compliant SBOMs
+- determine dependency paths
+- distinguish direct and transitive dependencies
+- calculate dependency statistics
+- generate standards-compliant SBOMs
 
 ---
 
@@ -157,10 +157,10 @@ The dependency graph describes only dependency structure.
 
 It intentionally does **not** contain:
 
-* vulnerability information
-* CVSS scores
-* advisory metadata
-* remediation guidance
+- vulnerability information
+- CVSS scores
+- advisory metadata
+- remediation guidance
 
 Those concerns belong to the vulnerability detection subsystem.
 
@@ -185,9 +185,9 @@ As long as the resulting graph conforms to the canonical model, the remaining sc
 
 The current implementation has several known architectural limitations.
 
-* Dependency path resolution follows a single parent path when multiple parent relationships exist.
-* Dependency path traversal applies a maximum traversal depth to prevent infinite recursion in cyclic graphs.
-* Some ecosystems currently expose less complete dependency relationship information than others due to limitations in their native metadata.
+- Dependency path resolution follows a single parent path when multiple parent relationships exist.
+- Dependency path traversal applies a maximum traversal depth to prevent infinite recursion in cyclic graphs.
+- Some ecosystems currently expose less complete dependency relationship information than others due to limitations in their native metadata.
 
 These limitations affect only graph construction and traversal. They do not change the overall architecture of the dependency graph.
 
@@ -199,5 +199,5 @@ The dependency graph is one component of the overall VulneraScan architecture.
 
 For additional details, see:
 
-* **Architecture Overview** — Overall system architecture.
-* **OSV Integration** — How vulnerabilities are retrieved and matched against graph nodes.
+- **Architecture Overview** — Overall system architecture.
+- **OSV Integration** — How vulnerabilities are retrieved and matched against graph nodes.

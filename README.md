@@ -12,11 +12,11 @@ VulneraScan was created to provide a simple, transparent, and extensible way to 
 
 ### Key Principles
 
-* **Privacy First** — Project source code and dependency graphs remain on your machine.
-* **Multi-Ecosystem** — Scan projects across multiple programming language ecosystems through a unified workflow.
-* **Consistent Results** — Every supported ecosystem produces the same normalized dependency and vulnerability models.
-* **Developer Friendly** — Command-line interface, browser dashboard, machine-readable reports, and security export formats.
-* **Open Source** — Built on open standards and the OSV vulnerability database.
+- **Privacy First** — Project source code and dependency graphs remain on your machine.
+- **Multi-Ecosystem** — Scan projects across multiple programming language ecosystems through a unified workflow.
+- **Consistent Results** — Every supported ecosystem produces the same normalized dependency and vulnerability models.
+- **Developer Friendly** — Command-line interface, browser dashboard, machine-readable reports, and security export formats.
+- **Open Source** — Built on open standards and the OSV vulnerability database.
 
 ---
 
@@ -28,10 +28,10 @@ It helps developers identify known vulnerabilities early, understand their depen
 
 Typical workflows include:
 
-* Running scans locally before committing changes.
-* Integrating scans into CI/CD pipelines.
-* Reviewing dependency health through the built-in dashboard.
-* Exporting results to security tooling using formats such as SARIF and CycloneDX.
+- Running scans locally before committing changes.
+- Integrating scans into CI/CD pipelines.
+- Reviewing dependency health through the built-in dashboard.
+- Exporting results to security tooling using formats such as SARIF and CycloneDX.
 
 VulneraScan is intentionally focused on dependency vulnerability analysis. It does **not** attempt to replace enterprise application security platforms.
 
@@ -43,22 +43,24 @@ By producing standardized outputs and security export formats, VulneraScan integ
 
 ## Features
 
-* Dependency discovery across multiple ecosystems.
-* Automatic dependency graph generation.
-* Vulnerability detection using the Open Source Vulnerability (OSV) database.
-* Local workspace with historical scan results.
-* Browser-based dashboard for exploring projects and scan history.
-* Multiple report formats:
+- Dependency discovery across multiple ecosystems.
+- Automatic dependency graph generation.
+- Vulnerability detection using the Open Source Vulnerability (OSV) database.
+- Local workspace with historical scan results.
+- Browser-based dashboard for exploring projects and scan history.
+- Multiple report formats:
 
-  * JSON
-  * Markdown
-  * CSV
-* Security exports:
+  - JSON
+  - Markdown
+  - CSV
 
-  * SARIF
-  * CycloneDX
-  * SPDX
-* AI-friendly context exports for LLM-assisted analysis.
+- Security exports:
+
+  - SARIF
+  - CycloneDX
+  - SPDX
+
+- AI-friendly context exports for LLM-assisted analysis.
 
 ---
 
@@ -108,9 +110,9 @@ Launch the dashboard:
 vulnerascan dashboard
 ```
 
-For a complete walkthrough, see:
+For installation instructions, see:
 
-**→ `docs/getting-started/quick-start.md`**
+**→ `docs/getting-started/installation.md`**
 
 ---
 
@@ -118,47 +120,40 @@ For a complete walkthrough, see:
 
 ### Getting Started
 
-* Installation
-* First Scan
-* Dashboard
+- Installation
 
 ### User Guide
 
-* CLI Reference
-* Dashboard
-* Workspace
-* Reports
-* Exporters
-* Supported Ecosystems
+- CLI Reference
+- Dashboard
+- Reports
+- Supported Ecosystems
 
 ### Architecture
 
-* System Architecture
-* Dependency Graph
-* OSV Integration
+- Architecture Overview
+- Dependency Graph
+- OSV Integration
 
 ### Development
 
-* Contributing
-* Security Policy
+- Contributing
+- Security Policy
 
 ---
 
 ## Documentation Index
 
-| Document                                  | Description                       |
-| ----------------------------------------- | --------------------------------- |
-| `docs/getting-started/installation.md`    | Installation instructions         |
-| `docs/getting-started/quick-start.md`     | First scan walkthrough            |
-| `docs/cli/README.md`                      | Complete CLI reference            |
-| `docs/dashboard/README.md`                | Dashboard usage                   |
-| `docs/workspace/README.md`                | Workspace layout and data storage |
-| `docs/reports/README.md`                  | Report formats                    |
-| `docs/exporters/README.md`                | Security and AI export formats    |
-| `docs/ecosystems/supported-ecosystems.md` | Supported ecosystems              |
-| `docs/architecture/README.md`             | Architecture overview             |
-| `CONTRIBUTING.md`                         | Contributor guide                 |
-| `SECURITY.md`                             | Security policy                   |
+| Document                                  | Description               |
+| ----------------------------------------- | ------------------------- |
+| `docs/getting-started/installation.md`    | Installation instructions |
+| `docs/cli/README.md`                      | Complete CLI reference    |
+| `docs/dashboard/README.md`                | Dashboard usage           |
+| `docs/reports/README.md`                  | Report formats            |
+| `docs/ecosystems/supported-ecosystems.md` | Supported ecosystems      |
+| `docs/architecture/README.md`             | Architecture overview     |
+| `CONTRIBUTING.md`                         | Contributor guide         |
+| `SECURITY.md`                             | Security policy           |
 
 ---
 

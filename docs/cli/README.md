@@ -92,23 +92,23 @@ vulnerascan doctor
 
 The command performs:
 
-* Node.js runtime validation
-* Supported operating system validation
-* Workspace accessibility checks
-* Detection of available ecosystem tooling
+- Node.js runtime validation
+- Supported operating system validation
+- Workspace accessibility checks
+- Detection of available ecosystem tooling
 
 Supported tooling includes:
 
-* npm
-* pnpm
-* yarn
-* Maven
-* Gradle
-* Python
-* Go
-* Cargo
-* Composer
-* .NET
+- npm
+- pnpm
+- yarn
+- Maven
+- Gradle
+- Python
+- Go
+- Cargo
+- Composer
+- .NET
 
 Missing ecosystem tooling is reported as diagnostic information and does not cause the command to fail unless a required core check fails.
 
@@ -145,10 +145,10 @@ vulnerascan dashboard summary
 
 Available filters:
 
-* `--ecosystem`
-* `--severity`
-* `--start-date`
-* `--end-date`
+- `--ecosystem`
+- `--severity`
+- `--start-date`
+- `--end-date`
 
 ### Projects
 
@@ -160,8 +160,8 @@ vulnerascan dashboard projects
 
 Available filters:
 
-* `--ecosystem`
-* `--severity`
+- `--ecosystem`
+- `--severity`
 
 When running natively, VulneraScan attempts to open the dashboard automatically in your default browser.
 
@@ -223,8 +223,8 @@ vulnerascan export llm
 
 Produces:
 
-* `llm-context.json`
-* `llm-context.md`
+- `llm-context.json`
+- `llm-context.md`
 
 ### Shared Options
 

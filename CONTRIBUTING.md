@@ -10,15 +10,15 @@ Whether you're fixing a bug, improving documentation, adding ecosystem support, 
 
 Before contributing, ensure your development environment includes:
 
-* Node.js 18 or later
-* npm 8 or later
-* Git
+- Node.js 18 or later
+- npm 8 or later
+- Git
 
 Development is supported on:
 
-* Linux
-* macOS
-* Windows
+- Linux
+- macOS
+- Windows
 
 ---
 
@@ -100,12 +100,12 @@ Create a dedicated branch for every change.
 
 Recommended prefixes include:
 
-* `feat/` – New features
-* `fix/` – Bug fixes
-* `docs/` – Documentation
-* `refactor/` – Internal improvements
-* `chore/` – Tooling and maintenance
-* `release/` – Release preparation
+- `feat/` – New features
+- `fix/` – Bug fixes
+- `docs/` – Documentation
+- `refactor/` – Internal improvements
+- `chore/` – Tooling and maintenance
+- `release/` – Release preparation
 
 Keep each branch focused on a single change.
 
@@ -133,11 +133,11 @@ refactor: simplify dependency resolution
 
 When submitting a pull request:
 
-* Target the `main` branch.
-* Keep the scope focused on a single logical change.
-* Update documentation when user-facing behaviour changes.
-* Add or update tests when appropriate.
-* Ensure the complete validation suite passes before requesting review.
+- Target the `main` branch.
+- Keep the scope focused on a single logical change.
+- Update documentation when user-facing behaviour changes.
+- Add or update tests when appropriate.
+- Ensure the complete validation suite passes before requesting review.
 
 ---
 
@@ -161,11 +161,11 @@ Every contribution is expected to satisfy the project's quality standards.
 
 This includes:
 
-* Consistent formatting using Prettier.
-* Linting with ESLint.
-* Type safety using TypeScript.
-* Passing automated tests.
-* Production dependency license compliance.
+- Consistent formatting using Prettier.
+- Linting with ESLint.
+- Type safety using TypeScript.
+- Passing automated tests.
+- Production dependency license compliance.
 
 ---
 
@@ -179,10 +179,10 @@ Contributors do not need to perform any release-related tasks as part of a norma
 
 # Best Practices
 
-* Keep pull requests small and focused.
-* Run the full validation suite before submitting changes.
-* Update documentation whenever behaviour changes.
-* Add tests for new functionality and bug fixes where applicable.
-* Prefer improving existing implementations over introducing unnecessary complexity.
+- Keep pull requests small and focused.
+- Run the full validation suite before submitting changes.
+- Update documentation whenever behaviour changes.
+- Add tests for new functionality and bug fixes where applicable.
+- Prefer improving existing implementations over introducing unnecessary complexity.
 
 Thank you for helping improve VulneraScan.

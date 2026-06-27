@@ -17,26 +17,26 @@ Every supported ecosystem participates in the complete scan pipeline and generat
 
 | Ecosystem   | Supported Manifest Files               | Supported Lockfiles                                                       | Dependency Resolution                                                  | Vulnerability Scanning |
 | ----------- | -------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ---------------------- |
-| **Node.js** | `package.json`                         | `package-lock.json`, `npm-shrinkwrap.json`, `pnpm-lock.yaml`, `yarn.lock` | Native package manager with isolated lockfile generation when required | ✅                      |
-| **Maven**   | `pom.xml`                              | `pom.xml`                                                                 | Offline manifest parsing                                               | ✅                      |
-| **Gradle**  | `build.gradle`, `build.gradle.kts`     | Build scripts                                                             | Offline manifest parsing                                               | ✅                      |
-| **Python**  | `requirements.txt`, `pyproject.toml`   | `poetry.lock`, `Pipfile.lock`                                             | Offline manifest and lockfile parsing                                  | ✅                      |
-| **Go**      | `go.mod`                               | `go.sum`                                                                  | Offline manifest and lockfile parsing                                  | ✅                      |
-| **Rust**    | `Cargo.toml`                           | `Cargo.lock`                                                              | Offline manifest and lockfile parsing                                  | ✅                      |
-| **.NET**    | `*.csproj`, `Directory.Packages.props` | `packages.lock.json`                                                      | Offline manifest and lockfile parsing                                  | ✅                      |
-| **PHP**     | `composer.json`                        | `composer.lock`                                                           | Offline manifest and lockfile parsing                                  | ✅                      |
+| **Node.js** | `package.json`                         | `package-lock.json`, `npm-shrinkwrap.json`, `pnpm-lock.yaml`, `yarn.lock` | Native package manager with isolated lockfile generation when required | ✅                     |
+| **Maven**   | `pom.xml`                              | `pom.xml`                                                                 | Offline manifest parsing                                               | ✅                     |
+| **Gradle**  | `build.gradle`, `build.gradle.kts`     | Build scripts                                                             | Offline manifest parsing                                               | ✅                     |
+| **Python**  | `requirements.txt`, `pyproject.toml`   | `poetry.lock`, `Pipfile.lock`                                             | Offline manifest and lockfile parsing                                  | ✅                     |
+| **Go**      | `go.mod`                               | `go.sum`                                                                  | Offline manifest and lockfile parsing                                  | ✅                     |
+| **Rust**    | `Cargo.toml`                           | `Cargo.lock`                                                              | Offline manifest and lockfile parsing                                  | ✅                     |
+| **.NET**    | `*.csproj`, `Directory.Packages.props` | `packages.lock.json`                                                      | Offline manifest and lockfile parsing                                  | ✅                     |
+| **PHP**     | `composer.json`                        | `composer.lock`                                                           | Offline manifest and lockfile parsing                                  | ✅                     |
 
 Every supported ecosystem generates:
 
-* Terminal summary
-* Markdown report
-* JSON report
-* CSV report
-* SARIF
-* CycloneDX SBOM
-* SPDX SBOM
-* AI Context (JSON)
-* AI Context (Markdown)
+- Terminal summary
+- Markdown report
+- JSON report
+- CSV report
+- SARIF
+- CycloneDX SBOM
+- SPDX SBOM
+- AI Context (JSON)
+- AI Context (Markdown)
 
 Every scan is also recorded in the local workspace and becomes immediately available in the dashboard.
 
@@ -50,9 +50,9 @@ Node.js projects use the native package manager to construct an accurate depende
 
 Supported package managers include:
 
-* npm
-* pnpm
-* Yarn
+- npm
+- pnpm
+- Yarn
 
 If a supported lockfile already exists, VulneraScan uses it directly.
 
@@ -82,10 +82,10 @@ No Gradle build is executed and no project files are modified.
 
 Python projects support:
 
-* Poetry
-* Pipenv
-* pip requirements
-* PEP 621 (`pyproject.toml`)
+- Poetry
+- Pipenv
+- pip requirements
+- PEP 621 (`pyproject.toml`)
 
 When lockfiles are present, they are used to improve dependency resolution. Otherwise, dependencies are extracted directly from the project manifests.
 
@@ -95,8 +95,8 @@ When lockfiles are present, they are used to improve dependency resolution. Othe
 
 Go projects are resolved using:
 
-* `go.mod`
-* `go.sum`
+- `go.mod`
+- `go.sum`
 
 When `go.sum` is available, VulneraScan uses it to improve dependency resolution for transitive dependencies.
 
@@ -106,8 +106,8 @@ When `go.sum` is available, VulneraScan uses it to improve dependency resolution
 
 Rust projects support:
 
-* `Cargo.toml`
-* `Cargo.lock`
+- `Cargo.toml`
+- `Cargo.lock`
 
 When `Cargo.lock` is present, VulneraScan resolves the complete dependency graph. Otherwise, dependency information is derived from `Cargo.toml`.
 
@@ -117,9 +117,9 @@ When `Cargo.lock` is present, VulneraScan resolves the complete dependency graph
 
 .NET projects support:
 
-* `*.csproj`
-* `Directory.Packages.props`
-* `packages.lock.json`
+- `*.csproj`
+- `Directory.Packages.props`
+- `packages.lock.json`
 
 When a lockfile is present, VulneraScan uses it to improve dependency resolution.
 
@@ -129,8 +129,8 @@ When a lockfile is present, VulneraScan uses it to improve dependency resolution
 
 PHP projects support:
 
-* `composer.json`
-* `composer.lock`
+- `composer.json`
+- `composer.lock`
 
 When `composer.lock` is available, VulneraScan resolves the complete dependency graph. Otherwise, dependency information is extracted from `composer.json`.
 
@@ -142,12 +142,12 @@ Every ecosystem follows the same workspace model.
 
 For each scanned project, VulneraScan creates an isolated workspace that contains:
 
-* Copied manifests and lockfiles
-* Generated lockfiles (when required)
-* Dependency resolution artifacts
-* Scan metadata
-* Generated reports
-* Dashboard data
+- Copied manifests and lockfiles
+- Generated lockfiles (when required)
+- Dependency resolution artifacts
+- Scan metadata
+- Generated reports
+- Dashboard data
 
 All dependency resolution occurs inside this isolated workspace.
 
@@ -161,11 +161,11 @@ Every successful scan is automatically recorded in the local workspace.
 
 The dashboard provides a unified view across every supported ecosystem, including:
 
-* Registered projects
-* Scan history
-* Vulnerability summaries
-* Dependency statistics
-* Individual scan reports
+- Registered projects
+- Scan history
+- Vulnerability summaries
+- Dependency statistics
+- Individual scan reports
 
 No additional configuration is required for different programming languages.
 
@@ -175,10 +175,10 @@ No additional configuration is required for different programming languages.
 
 For the most accurate results:
 
-* Commit dependency lockfiles whenever your ecosystem supports them.
-* Re-run scans after updating project dependencies.
-* Review both the generated reports and dashboard summaries.
-* Scan projects regularly to identify newly disclosed vulnerabilities.
+- Commit dependency lockfiles whenever your ecosystem supports them.
+- Re-run scans after updating project dependencies.
+- Review both the generated reports and dashboard summaries.
+- Scan projects regularly to identify newly disclosed vulnerabilities.
 
 Providing lockfiles where available improves dependency resolution accuracy, particularly for transitive dependencies.
 
@@ -190,8 +190,8 @@ VulneraScan supports the complete scan pipeline for every ecosystem listed above
 
 For the highest accuracy:
 
-* Keep dependency lockfiles under version control.
-* Scan projects from their repository root.
-* Use the package manager normally recommended for your ecosystem.
+- Keep dependency lockfiles under version control.
+- Scan projects from their repository root.
+- Use the package manager normally recommended for your ecosystem.
 
 As VulneraScan evolves, dependency resolution accuracy will continue to improve while maintaining the same privacy-first, local scanning model.

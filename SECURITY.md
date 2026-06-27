@@ -24,11 +24,11 @@ This allows vulnerabilities to be reported privately so they can be investigated
 
 When submitting a report, include as much information as possible, such as:
 
-* A description of the vulnerability
-* Steps to reproduce the issue
-* Potential impact
-* Proof of concept (if available)
-* Suggested mitigation (optional)
+- A description of the vulnerability
+- Steps to reproduce the issue
+- Potential impact
+- Proof of concept (if available)
+- Suggested mitigation (optional)
 
 After receiving a report, the project maintainer will investigate the issue, develop a fix if necessary, and coordinate responsible disclosure.
 
@@ -38,13 +38,13 @@ After receiving a report, the project maintainer will investigate the issue, dev
 
 Examples of security issues include:
 
-* Remote code execution
-* Command injection
-* Directory traversal
-* Privilege escalation
-* Arbitrary file access
-* Denial of service caused by malformed input
-* Dependency vulnerabilities that directly affect VulneraScan
+- Remote code execution
+- Command injection
+- Directory traversal
+- Privilege escalation
+- Arbitrary file access
+- Denial of service caused by malformed input
+- Dependency vulnerabilities that directly affect VulneraScan
 
 If you are unsure whether an issue is security-related, please report it through the private reporting channel.
 
@@ -54,11 +54,11 @@ If you are unsure whether an issue is security-related, please report it through
 
 The following are generally not considered security vulnerabilities:
 
-* Feature requests
-* Documentation issues
-* General usage questions
-* Cosmetic defects
-* Issues affecting unsupported releases
+- Feature requests
+- Documentation issues
+- General usage questions
+- Cosmetic defects
+- Issues affecting unsupported releases
 
 ---
 
@@ -78,9 +78,9 @@ Only the dependency coordinates required to identify packages and versions are t
 
 VulneraScan generates standard security artifacts including:
 
-* SARIF
-* CycloneDX SBOM
-* SPDX SBOM
+- SARIF
+- CycloneDX SBOM
+- SPDX SBOM
 
 These formats integrate with existing security and compliance tooling.
 
@@ -94,8 +94,8 @@ Organizations can configure VulneraScan to use an alternative OSV-compatible API
 
 To improve your software supply chain security:
 
-* Keep project dependencies up to date.
-* Scan projects regularly.
-* Review reported vulnerabilities promptly.
-* Regenerate SBOMs after dependency updates.
-* Keep VulneraScan updated to the latest release.
+- Keep project dependencies up to date.
+- Scan projects regularly.
+- Review reported vulnerabilities promptly.
+- Regenerate SBOMs after dependency updates.
+- Keep VulneraScan updated to the latest release.

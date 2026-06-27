@@ -148,18 +148,18 @@ The workspace is a central architectural component.
 
 Rather than operating directly inside the user's project, VulneraScan maintains an isolated workspace where it stores:
 
-* project metadata
-* scan history
-* generated reports
-* exported artifacts
-* cached vulnerability information
+- project metadata
+- scan history
+- generated reports
+- exported artifacts
+- cached vulnerability information
 
 Using a dedicated workspace provides several advantages:
 
-* Scan history is preserved across executions.
-* Reports can be regenerated without rescanning.
-* Dashboard data remains available between sessions.
-* Projects are never modified during analysis.
+- Scan history is preserved across executions.
+- Reports can be regenerated without rescanning.
+- Dashboard data remains available between sessions.
+- Projects are never modified during analysis.
 
 ---
 
@@ -171,11 +171,11 @@ It does not perform vulnerability scanning itself.
 
 Instead, it presents information already produced by previous scans, including:
 
-* registered projects
-* scan history
-* vulnerability summaries
-* dependency statistics
-* generated reports
+- registered projects
+- scan history
+- vulnerability summaries
+- dependency statistics
+- generated reports
 
 Because the dashboard consumes existing workspace data, every successful scan becomes available immediately without any additional import or synchronization step.
 
@@ -204,12 +204,12 @@ The current architecture intentionally focuses on local dependency vulnerability
 
 It does not include:
 
-* cloud-hosted services
-* remote project synchronization
-* automatic dependency upgrades
-* automatic code remediation
-* user authentication or multi-user collaboration
-* external database servers
+- cloud-hosted services
+- remote project synchronization
+- automatic dependency upgrades
+- automatic code remediation
+- user authentication or multi-user collaboration
+- external database servers
 
 Keeping the architecture local-first reduces operational complexity while preserving privacy and making VulneraScan easy to use in both developer workstations and CI/CD environments.
 
@@ -221,7 +221,7 @@ This document provides the architectural overview.
 
 The following documents describe individual subsystems in greater detail:
 
-* **Dependency Graph** – Structure and lifecycle of the dependency graph.
-* **OSV Integration** – Communication with the Open Source Vulnerability database and caching strategy.
+- **Dependency Graph** – Structure and lifecycle of the dependency graph.
+- **OSV Integration** – Communication with the Open Source Vulnerability database and caching strategy.
 
 Contributors are encouraged to begin with this overview before exploring subsystem-specific documentation.

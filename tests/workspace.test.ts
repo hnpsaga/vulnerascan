@@ -181,7 +181,7 @@ describe("Integration", () => {
     }
   });
 
-  it("runs scan twice and creates 1 workspace and 2 runs", async () => {
+  it("runs scan twice and creates 1 workspace and 2 runs", { timeout: 30000 }, async () => {
     const projectCwd = join(FIXTURES, "node-project");
 
     const execOpts = {

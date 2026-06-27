@@ -172,8 +172,51 @@ npm run typecheck
 # Run tests
 npm run test
 
+# Run license compliance check
+npm run licenses:check
+
 # Build the project
 npm run build
 ```
 
 All checks must pass with zero errors before opening a PR.
+
+---
+
+## License Compliance Policy
+
+VulneraScan is distributed as an open-source project under the [MIT License](file:///home/hnpsaga/projects/vulnerascan/LICENSE). To maintain compatibility, we enforce an automated license compliance check in our CI pipeline for all **production dependencies**.
+
+### Approved Licenses
+
+Production dependencies must use one of the following permissive licenses (including equivalent SPDX identifiers):
+
+- MIT
+- ISC
+- BSD-2-Clause
+- BSD-3-Clause
+- Apache-2.0
+- 0BSD
+- CC0-1.0
+
+### Disallowed Licenses
+
+Dependencies using copyleft or restrictive/commercial licenses are strictly disallowed. The CI pipeline will fail if any production dependency uses or is identified as:
+
+- GPL / GPL-2.0 / GPL-3.0
+- LGPL / LGPL-2.1 / LGPL-3.0
+- AGPL / AGPL-3.0
+- SSPL
+- BUSL
+- Elastic License
+- Commons Clause
+- Polyform licenses
+- Any source-available or unknown/missing license
+
+### Dealing with Failures
+
+If a dependency check fails:
+
+1. Verify if the dependency is only needed for development. If so, move it to `devDependencies` in `package.json`.
+2. If it is a production dependency, search for an alternative package that uses an approved license.
+3. If no alternative exists or you believe there is a licensing exception, open an issue/discussion to review with the maintainers.

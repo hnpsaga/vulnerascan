@@ -9,7 +9,6 @@ import { RunManager } from "../src/workspace/run-manager.js";
 
 describe("CLI Dashboard Commands", () => {
   const tempBaseDir = path.join(homedir(), ".vulnerascan-test-cli-dashboard");
-  const binPath = path.resolve("./dist/cli.js");
 
   beforeEach(() => {
     if (fs.existsSync(tempBaseDir)) {
@@ -71,21 +70,32 @@ describe("CLI Dashboard Commands", () => {
       },
     );
 
+    const PROJECT_ROOT = path.resolve("./");
+    const CLI_ENTRY = path.join(PROJECT_ROOT, "src", "cli.ts");
+
     // Call CLI using process env to target temp base dir
     const env = { ...process.env, VULNERASCAN_HOME: tempBaseDir };
 
-    const summaryOutput = execFileSync("node", [binPath, "dashboard", "summary"], {
-      env,
-      encoding: "utf8",
-    });
+    const summaryOutput = execFileSync(
+      "node",
+      ["--import", "tsx/esm", CLI_ENTRY, "dashboard", "summary"],
+      {
+        env,
+        encoding: "utf8",
+      },
+    );
     expect(summaryOutput).toContain("VULNERASCAN DASHBOARD SUMMARY");
     expect(summaryOutput).toContain("Total Projects:       1");
     expect(summaryOutput).toContain("Total Scans:          1");
 
-    const projectsOutput = execFileSync("node", [binPath, "dashboard", "projects"], {
-      env,
-      encoding: "utf8",
-    });
+    const projectsOutput = execFileSync(
+      "node",
+      ["--import", "tsx/esm", CLI_ENTRY, "dashboard", "projects"],
+      {
+        env,
+        encoding: "utf8",
+      },
+    );
     expect(projectsOutput).toContain("VULNERASCAN PROJECTS");
     expect(projectsOutput).toContain("Name:         my-cli-project");
 

@@ -14,7 +14,6 @@ Each scan run directory contains the following canonical files:
 - **`run.json`**: Metadata summary of the execution run (duration, error codes, totals).
 - **`discovery.json`**: Discovered project directory paths, manifest locations, and language ecosystems.
 - **`dependency-graph.json`**: Structured, ecosystem-agnostic map of resolved dependencies, direct/transitive relationships, and package versions.
-- **`provider-results.json`**: Raw/cached vulnerability advisory records queried from provider databases (like OSV).
 - **`vulnerabilities.json`**: Correlated scan findings matching advisory definitions to specific nodes inside the dependency graph.
 
 ## Exportable Reports

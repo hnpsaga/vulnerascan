@@ -58,6 +58,7 @@ function checkEcosystemTool(
     const output = execSync(`${cmd} ${versionArgs.join(" ")}`, {
       stdio: "pipe",
       env: { ...process.env },
+      timeout: 1000,
     })
       .toString()
       .trim()
